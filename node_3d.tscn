@@ -1,0 +1,126 @@
+[gd_scene load_steps=14 format=3 uid="uid://reldanvv8otd"]
+
+[ext_resource type="LightmapGIData" uid="uid://demu7gbo86mox" path="res://node_3d.lmbake" id="1_6j0ns"]
+[ext_resource type="Script" path="res://Rotate.cs" id="2_1arnp"]
+
+[sub_resource type="BoxMesh" id="BoxMesh_qbqg1"]
+lightmap_size_hint = Vector2i(204, 111)
+add_uv2 = true
+size = Vector3(20, 0.5, 20)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_ydrlq"]
+size = Vector3(20, 0.5, 20)
+
+[sub_resource type="BoxMesh" id="BoxMesh_artme"]
+lightmap_size_hint = Vector2i(54, 36)
+add_uv2 = true
+size = Vector3(5, 0.5, 5)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_a4q42"]
+size = Vector3(5, 0.5, 5)
+
+[sub_resource type="BoxMesh" id="BoxMesh_lo3ag"]
+lightmap_size_hint = Vector2i(24, 36)
+add_uv2 = true
+size = Vector3(2, 2, 2)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_fcs7u"]
+size = Vector3(2, 2, 2)
+
+[sub_resource type="PhysicalSkyMaterial" id="PhysicalSkyMaterial_iroq0"]
+
+[sub_resource type="Sky" id="Sky_juki6"]
+sky_material = SubResource("PhysicalSkyMaterial_iroq0")
+
+[sub_resource type="Environment" id="Environment_hvalo"]
+background_mode = 2
+sky = SubResource("Sky_juki6")
+tonemap_mode = 2
+
+[sub_resource type="BoxMesh" id="BoxMesh_f0abu"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_8snvf"]
+
+[node name="Node3D" type="Node3D"]
+
+[node name="Ground" type="StaticBody3D" parent="."]
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Ground"]
+mesh = SubResource("BoxMesh_qbqg1")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Ground"]
+shape = SubResource("BoxShape3D_ydrlq")
+
+[node name="StaticBody3D2" type="StaticBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.15837, 0)
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="StaticBody3D2"]
+mesh = SubResource("BoxMesh_artme")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="StaticBody3D2"]
+shape = SubResource("BoxShape3D_a4q42")
+
+[node name="StaticBody3D3" type="StaticBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.806661, 0.917173, -2.46887)
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="StaticBody3D3"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.0451729, 0, 0.0187609)
+mesh = SubResource("BoxMesh_lo3ag")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="StaticBody3D3"]
+shape = SubResource("BoxShape3D_fcs7u")
+
+[node name="LightmapGI" type="LightmapGI" parent="."]
+quality = 0
+bounces = 8
+directional = true
+bias = 0.00046
+environment_mode = 0
+light_data = ExtResource("1_6j0ns")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.447166, 0.894451, 0, -0.894451, 0.447166, 0, 8.29876, 0)
+visible = false
+light_bake_mode = 1
+shadow_enabled = true
+shadow_bias = 1.0
+shadow_normal_bias = 1.0
+shadow_opacity = 0.8
+sky_mode = 1
+
+[node name="OmniLight3D" type="OmniLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.01728, -0.714392)
+light_color = Color(0.439216, 0.760784, 1, 1)
+light_bake_mode = 1
+shadow_enabled = true
+shadow_bias = 1.0
+omni_attenuation = 0.707108
+
+[node name="OmniLight3D2" type="OmniLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 5.90004, -2.16249)
+light_energy = 2.0
+light_bake_mode = 1
+shadow_enabled = true
+shadow_bias = 1.0
+omni_range = 40.0
+omni_attenuation = 0.707108
+
+[node name="Camera3D" type="Camera3D" parent="."]
+transform = Transform3D(-4.37114e-08, 0, -1, 0, 1, 0, 1, 0, -4.37114e-08, -5, 1.5, 0)
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_hvalo")
+
+[node name="Node3D" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.52167, 0)
+script = ExtResource("2_1arnp")
+
+[node name="RigidBody3D" type="RigidBody3D" parent="Node3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 4.48833)
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Node3D/RigidBody3D"]
+gi_mode = 0
+mesh = SubResource("BoxMesh_f0abu")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Node3D/RigidBody3D"]
+shape = SubResource("BoxShape3D_8snvf")
