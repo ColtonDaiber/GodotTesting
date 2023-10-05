@@ -1,0 +1,170 @@
+[gd_scene load_steps=18 format=3 uid="uid://bhho5860uglyi"]
+
+[ext_resource type="LightmapGIData" uid="uid://cqdv1oyo6l8e6" path="res://Level/testing scene.lmbake" id="1_7qkcc"]
+[ext_resource type="PhysicsMaterial" uid="uid://dg5jvbj3lv578" path="res://Level/pillarPhysMat.tres" id="1_kjg57"]
+[ext_resource type="Script" path="res://Level/PlayerMovement.cs" id="2_wehxo"]
+
+[sub_resource type="PhysicsMaterial" id="PhysicsMaterial_4vy8q"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_aw16u"]
+
+[sub_resource type="BoxMesh" id="BoxMesh_ou865"]
+lightmap_size_hint = Vector2i(104, 61)
+material = SubResource("StandardMaterial3D_aw16u")
+add_uv2 = true
+size = Vector3(10, 0.5, 10)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_5kxx1"]
+size = Vector3(10, 0.5, 10)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_l6i1w"]
+
+[sub_resource type="BoxMesh" id="BoxMesh_whtk1"]
+lightmap_size_hint = Vector2i(9, 28)
+material = SubResource("StandardMaterial3D_l6i1w")
+add_uv2 = true
+size = Vector3(0.5, 2, 0.5)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_wjktk"]
+size = Vector3(0.5, 2, 0.5)
+
+[sub_resource type="PhysicsMaterial" id="PhysicsMaterial_a8dfs"]
+rough = true
+bounce = 0.25
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_no3qo"]
+albedo_color = Color(0.509804, 0.321569, 1, 1)
+metallic = 0.87
+roughness = 0.2
+
+[sub_resource type="SphereMesh" id="SphereMesh_v7158"]
+lightmap_size_hint = Vector2i(9, 5)
+material = SubResource("StandardMaterial3D_no3qo")
+radius = 0.25
+height = 0.5
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_u8gb7"]
+radius = 0.25
+
+[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_veuka"]
+
+[sub_resource type="Sky" id="Sky_j3vlp"]
+sky_material = SubResource("ProceduralSkyMaterial_veuka")
+
+[sub_resource type="Environment" id="Environment_6e0oh"]
+background_mode = 1
+sky = SubResource("Sky_j3vlp")
+ambient_light_sky_contribution = 0.0
+ambient_light_energy = 0.0
+reflected_light_source = 1
+tonemap_mode = 2
+fog_light_color = Color(0, 0, 0, 1)
+fog_light_energy = 0.0
+
+[node name="TestingScene" type="Node3D"]
+
+[node name="StaticBody3D" type="StaticBody3D" parent="."]
+physics_material_override = SubResource("PhysicsMaterial_4vy8q")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="StaticBody3D"]
+mesh = SubResource("BoxMesh_ou865")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="StaticBody3D"]
+shape = SubResource("BoxShape3D_5kxx1")
+
+[node name="StaticBody3D2" type="StaticBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9.27411, 0, -8.99435)
+physics_material_override = SubResource("PhysicsMaterial_4vy8q")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="StaticBody3D2"]
+mesh = SubResource("BoxMesh_ou865")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="StaticBody3D2"]
+shape = SubResource("BoxShape3D_5kxx1")
+
+[node name="pillar" type="StaticBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.7821, 1.22451, 0)
+physics_material_override = ExtResource("1_kjg57")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="pillar"]
+mesh = SubResource("BoxMesh_whtk1")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="pillar"]
+shape = SubResource("BoxShape3D_wjktk")
+
+[node name="pillar2" type="StaticBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.38396, 1.22451, -1.40125)
+physics_material_override = ExtResource("1_kjg57")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="pillar2"]
+mesh = SubResource("BoxMesh_whtk1")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="pillar2"]
+shape = SubResource("BoxShape3D_wjktk")
+
+[node name="pillar3" type="StaticBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.60249, 1.22451, -1.32362)
+physics_material_override = ExtResource("1_kjg57")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="pillar3"]
+mesh = SubResource("BoxMesh_whtk1")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="pillar3"]
+shape = SubResource("BoxShape3D_wjktk")
+
+[node name="pillar4" type="StaticBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.63658, 1.22451, 0.364386)
+physics_material_override = ExtResource("1_kjg57")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="pillar4"]
+mesh = SubResource("BoxMesh_whtk1")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="pillar4"]
+shape = SubResource("BoxShape3D_wjktk")
+
+[node name="Player" type="RigidBody3D" parent="." node_paths=PackedStringArray("playerCamera")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.091, 0)
+physics_material_override = SubResource("PhysicsMaterial_a8dfs")
+linear_damp = 1.0
+script = ExtResource("2_wehxo")
+playerCamera = NodePath("../Camera3D")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Player"]
+gi_mode = 0
+mesh = SubResource("SphereMesh_v7158")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Player"]
+shape = SubResource("SphereShape3D_u8gb7")
+
+[node name="Camera3D" type="Camera3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.939693, 0.34202, 0, -0.34202, 0.939693, 0, 2, 3.5)
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_6e0oh")
+
+[node name="LightmapGI" type="LightmapGI" parent="."]
+quality = 2
+bounces = 6
+environment_mode = 0
+light_data = ExtResource("1_7qkcc")
+
+[node name="OmniLight3D" type="OmniLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.15508, 0)
+light_color = Color(0.85098, 0.494118, 0.290196, 1)
+light_energy = 0.5
+light_bake_mode = 1
+shadow_enabled = true
+omni_attenuation = 1.27456
+
+[node name="OmniLight3D2" type="OmniLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.91259, 2.15508, -8.59443)
+light_color = Color(0.85098, 0.494118, 0.290196, 1)
+light_energy = 0.5
+light_bake_mode = 1
+shadow_enabled = true
+omni_attenuation = 1.27456
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.641195, 0.767378, 0, -0.767378, 0.641195, 0, 2.16064, 0)
+light_color = Color(0, 0.32549, 0.419608, 1)
+light_energy = 0.03
