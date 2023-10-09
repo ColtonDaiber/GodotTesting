@@ -2,28 +2,27 @@ using Godot;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Data;
 using System.Linq;
+using System.Reflection.Metadata.Ecma335;
 
 [Tool]
 public partial class ExtrudeShape : Node3D
 {
 	[Export] public Node3D physicsBody;
 
+	//inital shape
 	public Vector2[] pointsInShape = 
 	{
 		new Vector2(0,0),
-		new Vector2(1,0),
-		new Vector2(1,1),
-		new Vector2(-.5f,1),
-		new Vector2(1,1.5f),
-		new Vector2(0,1.5f)
+		new Vector2(2,0),
+		new Vector2(2,2),
+		new Vector2(0,2),
 	};
 	public int[] indiciesInShape =
 	{
 		0,3,2,
 		0,2,1,
-		3,4,2,
-		4,3,5 
 	};
 
 	MeshInstance3D meshInstance;
@@ -153,8 +152,7 @@ public partial class ExtrudeShape : Node3D
 	public override void _Ready()
 	{
 		RemoveChildren();
-		// Create3DShape(PointsToVertex(pointsInShape), indiciesInShape);
-		Extrude2DShape(pointsInShape, indiciesInShape, 1);
+		Extrude2DShape(pointsInShape, indiciesInShape, .25f);
 	}
 
 	void RemoveChildren()
@@ -164,6 +162,59 @@ public partial class ExtrudeShape : Node3D
 		{
 			if(children[i] != physicsBody) children[i].QueueFree();
 		}
+	}
+
+	void CutTriangle(Vector2[] verticies, int[] indicies, float lineSlope, float lineInterceptY)
+	{
+		if(indicies.Length != 3)
+		{
+			GD.PushError("expected 3 indicies!");
+			return;
+		}
+
+		/* cramer's rule
+			ax + by = c
+			dx + ey = f
+			Dx = c*e-b*f
+			Dy = a*f-c*d
+			D = a*e-d*b
+		*/
+		float a = -lineSlope;
+		const float b = 1;
+		float c = lineInterceptY;
+
+		for(int i = 0; i < 3; i++)
+		{
+			int index2 = (i != 2 ? i+1 : 0);
+			float slope = (verticies[index2].Y-verticies[i].Y)/(verticies[index2].X-verticies[i].X);
+			float d = -1*(slope);
+			const float e = 1;
+			float f = (-verticies[i].X*slope) + verticies[i].Y;
+
+			float D = a*e - d*b;
+			float x = (c*e - b*f) / D;
+			float y = (a*f - c*d) / D;
+
+			bool intersect = false;
+			if(x != float.NaN && y != float.NaN)
+			{
+				float smallerX;
+				float biggerX;
+				if(verticies[i].X < verticies[index2].X) { smallerX = verticies[i].X; biggerX = verticies[index2].X; }
+				else { biggerX = verticies[i].X; smallerX = verticies[index2].X; }
+				float smallerY;
+				float biggerY;
+				if(verticies[i].Y < verticies[index2].Y) { smallerY = verticies[i].Y; biggerY = verticies[index2].Y; }
+				else { biggerY = verticies[i].Y; smallerY = verticies[index2].Y; }
+
+				if((x >= smallerX && x <= biggerX) && (y >= smallerY && y <= biggerY))
+				{
+					intersect = true;
+				}
+			}
+		}
+		//do something with interescting points
+		
 	}
 
 	public override void _Process(double delta)
