@@ -1,9 +1,10 @@
 using System;
 using Godot;
-// using System;
 
 public partial class PlayerMovement : RigidBody3D
 {
+	[Export] bool forceMode;
+
 	[Export] private Node3D playerCamera;
 	const float cameraHeight = 2;
 	const float cameraDist = 3.5f;
@@ -34,7 +35,8 @@ public partial class PlayerMovement : RigidBody3D
 		if(jump) this.ApplyImpulse(new Vector3(0, 5, 0));
 		jump = false;
 
-		this.ApplyCentralForce(force);
+		if(forceMode) this.ApplyCentralForce(force);
+		else this.ApplyTorque(force/10);
     }
 
     public override void _Process(double delta)

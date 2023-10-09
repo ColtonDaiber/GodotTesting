@@ -1,8 +1,8 @@
-[gd_scene load_steps=18 format=3 uid="uid://bhho5860uglyi"]
+[gd_scene load_steps=20 format=3 uid="uid://bhho5860uglyi"]
 
-[ext_resource type="LightmapGIData" uid="uid://cqdv1oyo6l8e6" path="res://Level/testing scene.lmbake" id="1_7qkcc"]
-[ext_resource type="PhysicsMaterial" uid="uid://dg5jvbj3lv578" path="res://Level/pillarPhysMat.tres" id="1_kjg57"]
-[ext_resource type="Script" path="res://Level/PlayerMovement.cs" id="2_wehxo"]
+[ext_resource type="LightmapGIData" uid="uid://cqdv1oyo6l8e6" path="res://Level/Testing/testing scene.lmbake" id="1_7qkcc"]
+[ext_resource type="PhysicsMaterial" uid="uid://dg5jvbj3lv578" path="res://Level/Testing/pillarPhysMat.tres" id="1_kjg57"]
+[ext_resource type="Script" path="res://Level/Testing/PlayerMovement.cs" id="2_wehxo"]
 
 [sub_resource type="PhysicsMaterial" id="PhysicsMaterial_4vy8q"]
 
@@ -61,6 +61,16 @@ tonemap_mode = 2
 fog_light_color = Color(0, 0, 0, 1)
 fog_light_energy = 0.0
 
+[sub_resource type="Curve3D" id="Curve3D_n37ve"]
+bake_interval = 0.5
+_data = {
+"points": PackedVector3Array(-2.15372, 0.0197492, -0.0897515, 2.15372, -0.0197492, 0.0897515, 2.30608, -0.102451, -2.04498, -0.769184, 0.128795, -0.644196, 0.769184, -0.128795, 0.644196, 6.43864, 0, -1.63943, 1.0611, 0.208827, -1.05467, -1.0611, -0.208827, 1.05467, 8.28722, 0, 0.767213, 1.20522, 0.351614, -0.72474, -1.20522, -0.351614, 0.72474, 4.1192, 0, 4.1679, 1.90224, -0.559367, 0.340948, -1.90224, 0.559367, -0.340948, -5.43761, 0, 4.44693, -1.36102, -0.0574985, 0.83632, 1.36102, 0.0574985, -0.83632, -6.79788, 0, 0.784653, -0.798976, 0, 1.14904, 0.798976, 0, -1.14904, -4.31578, 0, -0.783951, -0.630422, 0, 0.635332, 0.630422, 0, -0.635332, -3.83699, 0, -3.06467, -1.31759, -0.0891113, -0.483634, 1.31759, 0.0891113, 0.483634, -1.42654, 0, -2.94738, -1.53188, -0.0910401, -0.204773, 1.53188, 0.0910401, 0.204773, 2.25318, 0, -2.02309),
+"tilts": PackedFloat32Array(-0.651341, -1.14425, -0.92864, -0.953369, -0.975185, -0.871106, -0.980286, -0.869574, -0.836001, -1.51194)
+}
+point_count = 10
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_bkcal"]
+
 [node name="TestingScene" type="Node3D"]
 
 [node name="StaticBody3D" type="StaticBody3D" parent="."]
@@ -73,7 +83,7 @@ mesh = SubResource("BoxMesh_ou865")
 shape = SubResource("BoxShape3D_5kxx1")
 
 [node name="StaticBody3D2" type="StaticBody3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9.27411, 0, -8.99435)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.00557804, 0, -9.81796)
 physics_material_override = SubResource("PhysicsMaterial_4vy8q")
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="StaticBody3D2"]
@@ -81,6 +91,53 @@ mesh = SubResource("BoxMesh_ou865")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="StaticBody3D2"]
 shape = SubResource("BoxShape3D_5kxx1")
+
+[node name="OmniLight3D2" type="OmniLight3D" parent="StaticBody3D2"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.36152, 2.15508, 0.39992)
+light_color = Color(0.85098, 0.494118, 0.290196, 1)
+light_energy = 0.5
+light_bake_mode = 1
+shadow_enabled = true
+omni_range = 7.0
+omni_attenuation = 1.27456
+
+[node name="StaticBody3D4" type="StaticBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.00557804, 0.701122, -33.6421)
+physics_material_override = SubResource("PhysicsMaterial_4vy8q")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="StaticBody3D4"]
+mesh = SubResource("BoxMesh_ou865")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="StaticBody3D4"]
+shape = SubResource("BoxShape3D_5kxx1")
+
+[node name="OmniLight3D2" type="OmniLight3D" parent="StaticBody3D4"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.36152, 2.15508, 0.39992)
+light_color = Color(0.85098, 0.494118, 0.290196, 1)
+light_energy = 0.5
+light_bake_mode = 1
+shadow_enabled = true
+omni_range = 7.0
+omni_attenuation = 1.27456
+
+[node name="StaticBody3D3" type="StaticBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.962678, -0.270651, 0, 0.270651, 0.962678, -0.00557804, 0, -19.6157)
+physics_material_override = SubResource("PhysicsMaterial_4vy8q")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="StaticBody3D3"]
+mesh = SubResource("BoxMesh_ou865")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="StaticBody3D3"]
+shape = SubResource("BoxShape3D_5kxx1")
+
+[node name="OmniLight3D2" type="OmniLight3D" parent="StaticBody3D3"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.36152, 2.15508, 0.39992)
+light_color = Color(0.85098, 0.494118, 0.290196, 1)
+light_energy = 0.5
+light_bake_mode = 1
+shadow_enabled = true
+omni_range = 7.0
+omni_attenuation = 1.27456
 
 [node name="pillar" type="StaticBody3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.7821, 1.22451, 0)
@@ -123,10 +180,11 @@ mesh = SubResource("BoxMesh_whtk1")
 shape = SubResource("BoxShape3D_wjktk")
 
 [node name="Player" type="RigidBody3D" parent="." node_paths=PackedStringArray("playerCamera")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.091, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.0484238, 1.091, -0.00500393)
 physics_material_override = SubResource("PhysicsMaterial_a8dfs")
 linear_damp = 1.0
 script = ExtResource("2_wehxo")
+forceMode = true
 playerCamera = NodePath("../Camera3D")
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="Player"]
@@ -156,15 +214,29 @@ light_bake_mode = 1
 shadow_enabled = true
 omni_attenuation = 1.27456
 
-[node name="OmniLight3D2" type="OmniLight3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.91259, 2.15508, -8.59443)
-light_color = Color(0.85098, 0.494118, 0.290196, 1)
-light_energy = 0.5
-light_bake_mode = 1
-shadow_enabled = true
-omni_attenuation = 1.27456
-
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 0.641195, 0.767378, 0, -0.767378, 0.641195, 0, 2.16064, 0)
 light_color = Color(0, 0.32549, 0.419608, 1)
-light_energy = 0.03
+light_energy = 0.5
+
+[node name="Node" type="Node" parent="."]
+
+[node name="Path3D" type="Path3D" parent="Node"]
+curve = SubResource("Curve3D_n37ve")
+
+[node name="CSGPolygon3D" type="CSGPolygon3D" parent="Node"]
+transform = Transform3D(5, 0, 0, 0, 5, 0, 0, 0, 5, 0, 1.51206, -62.7451)
+use_collision = true
+polygon = PackedVector2Array(-0.362528, -0.00231543, -0.27729, 0.103793, 0.934327, 0.117975, 1, 0)
+mode = 2
+path_node = NodePath("../Path3D")
+path_interval_type = 1
+path_interval = 0.1
+path_simplify_angle = 0.0
+path_rotation = 2
+path_local = false
+path_continuous_u = true
+path_u_distance = 1.0
+path_joined = true
+smooth_faces = true
+material = SubResource("StandardMaterial3D_bkcal")

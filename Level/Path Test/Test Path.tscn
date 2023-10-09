@@ -1,0 +1,31 @@
+[gd_scene load_steps=3 format=3 uid="uid://budadl5tvycq5"]
+
+[sub_resource type="Curve3D" id="Curve3D_wh8m2"]
+bake_interval = 0.5
+_data = {
+"points": PackedVector3Array(-2.15372, 0.0197492, -0.0897515, 2.15372, -0.0197492, 0.0897515, 2.25318, 0, -2.02309, -0.769184, 0.128795, -0.644196, 0.769184, -0.128795, 0.644196, 6.43864, 0, -1.63943, 1.0611, 0.208827, -1.05467, -1.0611, -0.208827, 1.05467, 8.28722, 0, 0.767213, 1.20522, 0.351614, -0.72474, -1.20522, -0.351614, 0.72474, 4.1192, 0, 4.1679, 1.90224, -0.559367, 0.340948, -1.90224, 0.559367, -0.340948, -5.43761, 0, 4.44693, -1.36102, -0.0574985, 0.83632, 1.36102, 0.0574985, -0.83632, -6.79788, 0, 0.784653, -0.798976, 0, 1.14904, 0.798976, 0, -1.14904, -4.31578, 0, -0.783951, -0.630422, 0, 0.635332, 0.630422, 0, -0.635332, -3.83699, 0, -3.06467, -1.31759, -0.0891113, -0.483634, 1.31759, 0.0891113, 0.483634, -1.42654, 0, -2.94738, -1.07037, 0.012337, -0.0573647, 1.07037, -0.012337, 0.0573647, 2.25318, 0, -2.02309),
+"tilts": PackedFloat32Array(0, 0, 0, 0, 0.321735, 0.32973, -0.0104951, -0.087523, 0, 0)
+}
+point_count = 10
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_n4eew"]
+
+[node name="TestPath" type="Node3D"]
+
+[node name="Path3D" type="Path3D" parent="."]
+curve = SubResource("Curve3D_wh8m2")
+
+[node name="CSGPolygon3D" type="CSGPolygon3D" parent="."]
+polygon = PackedVector2Array(0, 0, 0.0573981, 0.113535, 0.934327, 0.117975, 1, 0)
+mode = 2
+path_node = NodePath("../Path3D")
+path_interval_type = 0
+path_interval = 0.25
+path_simplify_angle = 0.0
+path_rotation = 2
+path_local = false
+path_continuous_u = true
+path_u_distance = 1.0
+path_joined = true
+smooth_faces = true
+material = SubResource("StandardMaterial3D_n4eew")
