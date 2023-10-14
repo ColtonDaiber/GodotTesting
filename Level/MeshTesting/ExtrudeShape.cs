@@ -200,12 +200,16 @@ public partial class ExtrudeShape : Node3D
 		float lineCutSlope = (pt2.Y-pt1.Y)/(pt2.X-pt1.X);
 		float lineCutYIntercept = (-pt1.X*lineCutSlope) + pt1.Y;
 
-		List<Vector2> intersectPts = new List<Vector2>();
-		List<int> intersectPtsLineIndex = new List<int>();
+		List<Vector2> pointsInShape1 = new List<Vector2>();
+		List<Vector2> pointsInShape2 = new List<Vector2>();
 		bool sameLine = false; //TODO impliment same line check
 		for(int i = 0; i < 3; i++)
 		{
 			int index2 = (i != 2 ? i+1 : 0);
+			int shapeNum = GetShapePointIsIn(lineCutSlope, pt1, verticies[indicies[i]]);
+			if(shapeNum == 1) pointsInShape1.Add(verticies[indicies[i]]);
+			else if(shapeNum == -1) pointsInShape2.Add(verticies[indicies[i]]);
+
 			float slope = (verticies[indicies[index2]].Y-verticies[indicies[i]].Y)/(verticies[indicies[index2]].X-verticies[indicies[i]].X);
 			float yIntercept = (-verticies[indicies[i]].X*slope) + verticies[indicies[i]].Y;
 			float x = 0;
@@ -251,23 +255,25 @@ public partial class ExtrudeShape : Node3D
 			if(intersect) intersect = CheckIntersectionInRange(verticies[indicies[i]], verticies[indicies[index2]], new Vector2(x, y));
 			else continue;
 
-			if(intersect)
-			{
-				intersectPts.Add(new Vector2(x, y));
-				intersectPtsLineIndex.Add(i);
-				GD.Print(verticies[indicies[i]].X +" "+ verticies[indicies[i]].Y);
-				int shape = GetShapePointIsIn(lineCutSlope, pt1, verticies[indicies[i]]);
-				GD.Print(shape);
-				GD.Print(verticies[indicies[index2]].X +" "+ verticies[indicies[index2]].Y);
-				shape = GetShapePointIsIn(lineCutSlope, pt1, verticies[indicies[index2]]);
-				GD.Print(shape);
-			}
+			if(intersect) intersectPoints.Add( new extraPointInfo(new Vector2(x, y), verticies[indicies[i]], verticies[indicies[index2]]) );
+			// intersectPts.Add(new Vector2(x, y));
+			// intersectPtsLineIndex.Add(i);
+			// GD.Print(verticies[indicies[i]].X +" "+ verticies[indicies[i]].Y);
+			// int shape = GetShapePointIsIn(lineCutSlope, pt1, verticies[indicies[i]]);
+			// GD.Print(shape);
+			// GD.Print(verticies[indicies[index2]].X +" "+ verticies[indicies[index2]].Y);
+			// shape = GetShapePointIsIn(lineCutSlope, pt1, verticies[indicies[index2]]);
+			// GD.Print(shape);
 
 			// GD.Print("X0, Y0, X1, Y1\t\t" + verticies[indicies[i]].X +","+ verticies[indicies[i]].Y +" "+ verticies[indicies[index2]].X +","+ verticies[indicies[index2]].Y);
 			// GD.Print(x +", "+ y);
 			// GD.Print(intersect + "\n");
 		}
 
+		for(int i = 0; i < 3; i++)
+		{
+
+		}
 		//make a list of all points, intersection and old vertices
 		//for single triangle shape
 			//add points that are in shape, and add their index
@@ -280,6 +286,8 @@ public partial class ExtrudeShape : Node3D
 			//iterate through shape and look for points that match the new list of points
 				//if match found change indicies list to have the index that's in the orignal shape
 			//add intersections to list of points, and convert any indecies' indexs in new shape into the mesh's indexs
+		
+
 	}
 
 	int GetShapePointIsIn(float slope, Vector2 linePt, Vector2 vertex)
@@ -331,4 +339,28 @@ class Shape
 {
 	public List<Vector2> vertecies = new List<Vector2>();
 	public List<int> indicies = new List<int>();
+};
+
+struct extraPointInfo
+{
+	public Vector2 point;
+	public Vector2 linePt1;
+	public Vector2 linePt2;
+	public extraPointInfo(Vector2 newPoint, Vector2 newLinePt1, Vector2 newLinePt2)
+	{
+		point = newPoint;
+		linePt1 = newLinePt1;
+		linePt2 = newLinePt2;
+	}
+};
+
+struct origianlPointInfo
+{
+	public Vector2 point;
+	public int shape = 0;
+	public origianlPointInfo(Vector2 newPoint, int newShape)
+	{
+		point = newPoint;
+		shape = newShape;
+	}
 };
