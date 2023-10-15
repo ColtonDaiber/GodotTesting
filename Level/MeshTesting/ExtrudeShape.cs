@@ -1,11 +1,7 @@
 using Godot;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Linq;
-using System.Linq.Expressions;
-using System.Reflection.Metadata.Ecma335;
+using System.Transactions;
 
 [Tool]
 public partial class ExtrudeShape : Node3D
@@ -72,6 +68,20 @@ public partial class ExtrudeShape : Node3D
 		body.CenterOfMass = centerOfMass;
 	}
 
+	public void Extrude2DShape(Shape shape, float extrudeDist)
+	{
+		Extrude2DShape(shape.points, shape.indicies, extrudeDist);
+	}
+	public void Extrude2DShape(List<Vector2> points, List<int> indicies, float extrudeDist)
+	{
+		Vector2[] pointsArr = new Vector2[points.Count];
+		for(int i = 0; i < points.Count; i++) pointsArr[i] = points[i];
+
+		int[] indiciesArr = new int[indicies.Count];
+		for(int i = 0; i < indicies.Count; i++) indiciesArr[i] = indicies[i];
+
+		Extrude2DShape(pointsArr, indiciesArr, extrudeDist);
+	}
 	public void Extrude2DShape(Vector2[] points, int[] indicies, float extrudeDist)
 	{
 		if(indicies.Length % 3 != 0) //this stores list of triangles, so if its not a multiple of 3, theres an error
@@ -164,11 +174,13 @@ public partial class ExtrudeShape : Node3D
 	public override void _Ready()
 	{
 		RemoveChildren();
-		Extrude2DShape(pointsInShape, indiciesInShape, .25f);
+		// Extrude2DShape(pointsInShape, indiciesInShape, .25f);
 
 		int[] ind = {indiciesInShape[0], indiciesInShape[1], indiciesInShape[2]};
-		CutTriangle(pointsInShape, ind, new Vector2(0,1), new Vector2(1,1));
-		// CutTriangle(pointsInShape, ind, 1, 1);
+		CutTriangle(pointsInShape, ind, new Vector2(.5f,2), new Vector2(.5f,.5f));
+
+		// Shape newShape = CreateShapeFromPoints(new List<Vector2>(pointsInShape));
+		// Extrude2DShape(newShape.points, newShape.indicies, .25f);
 	}
 
 	void RemoveChildren()
@@ -190,7 +202,7 @@ public partial class ExtrudeShape : Node3D
 			return;
 		}
 
-		/* cramer's rule		//shits fucked
+		/* cramer's rule
 			ax + by = c
 			dx + ey = f
 			Dx = c*e-b*f
@@ -202,14 +214,24 @@ public partial class ExtrudeShape : Node3D
 
 		List<Vector2> pointsInShape1 = new List<Vector2>();
 		List<Vector2> pointsInShape2 = new List<Vector2>();
-		bool sameLine = false; //TODO impliment same line check
+		bool sameLine = false;
 		for(int i = 0; i < 3; i++)
 		{
 			int index2 = (i != 2 ? i+1 : 0);
 			int shapeNum = GetShapePointIsIn(lineCutSlope, pt1, verticies[indicies[i]]);
 			if(shapeNum == 1) pointsInShape1.Add(verticies[indicies[i]]);
 			else if(shapeNum == -1) pointsInShape2.Add(verticies[indicies[i]]);
-
+			else if(shapeNum == 0)
+			{
+				pointsInShape1.Clear();
+				pointsInShape2.Clear();
+				for(int w = 0; w < 3; w++)
+				{
+					pointsInShape1.Add(verticies[indicies[w]]);
+				}
+				sameLine = true;
+				break;
+			}
 			float slope = (verticies[indicies[index2]].Y-verticies[indicies[i]].Y)/(verticies[indicies[index2]].X-verticies[indicies[i]].X);
 			float yIntercept = (-verticies[indicies[i]].X*slope) + verticies[indicies[i]].Y;
 			float x = 0;
@@ -230,7 +252,7 @@ public partial class ExtrudeShape : Node3D
 			}
 			else if(!float.IsInfinity(slope) && !float.IsInfinity(lineCutSlope))
 			{
-				if(slope == lineCutSlope && yIntercept == lineCutYIntercept) sameLine = true;
+				if(slope == lineCutSlope && yIntercept == lineCutYIntercept) {sameLine = true; GD.PrintErr("shouldnt be here");} //should never get here
 				GD.Print("Cramers Rule");
 				float a = -lineCutSlope;
 				const float b = 1;
@@ -247,33 +269,32 @@ public partial class ExtrudeShape : Node3D
 			}
 			else
 			{	//lines are parallel and never intersect
-				GD.Print("parallel");
-				if(verticies[indicies[i]].X == pt1.X) sameLine = true;
+				if(verticies[indicies[i]].X == pt1.X) {sameLine = true; GD.PrintErr("shouldnt be here");} //should never get here
 				intersect = false;
 			}
 
 			if(intersect) intersect = CheckIntersectionInRange(verticies[indicies[i]], verticies[indicies[index2]], new Vector2(x, y));
 			else continue;
 
-			if(intersect) intersectPoints.Add( new extraPointInfo(new Vector2(x, y), verticies[indicies[i]], verticies[indicies[index2]]) );
-			// intersectPts.Add(new Vector2(x, y));
-			// intersectPtsLineIndex.Add(i);
-			// GD.Print(verticies[indicies[i]].X +" "+ verticies[indicies[i]].Y);
-			// int shape = GetShapePointIsIn(lineCutSlope, pt1, verticies[indicies[i]]);
-			// GD.Print(shape);
-			// GD.Print(verticies[indicies[index2]].X +" "+ verticies[indicies[index2]].Y);
-			// shape = GetShapePointIsIn(lineCutSlope, pt1, verticies[indicies[index2]]);
-			// GD.Print(shape);
-
-			// GD.Print("X0, Y0, X1, Y1\t\t" + verticies[indicies[i]].X +","+ verticies[indicies[i]].Y +" "+ verticies[indicies[index2]].X +","+ verticies[indicies[index2]].Y);
-			// GD.Print(x +", "+ y);
-			// GD.Print(intersect + "\n");
+			if(intersect)
+			{
+				pointsInShape1.Add(new Vector2(x,y));
+				pointsInShape2.Add(new Vector2(x,y));
+			}
 		}
 
-		for(int i = 0; i < 3; i++)
-		{
+		GD.Print(pointsInShape1.Count);
+		GD.Print(pointsInShape2.Count);
 
-		}
+		Shape triangles1 = new Shape();
+		Shape triangles2 = new Shape();
+		if(pointsInShape1.Count > 0) triangles1 = CreateShapeFromPoints(pointsInShape1);
+		if(pointsInShape2.Count > 0) triangles2 = CreateShapeFromPoints(pointsInShape2);
+		Extrude2DShape(triangles2, 1);
+		for(int i = 0; i < triangles2.points.Count; i++) GD.Print(triangles2.points[i]);
+		for(int i = 0; i < triangles2.indicies.Count; i++) GD.Print(triangles2.indicies[i]);
+		// Extrude2DShape(shape2.points, shape2.indicies, 1);
+
 		//make a list of all points, intersection and old vertices
 		//for single triangle shape
 			//add points that are in shape, and add their index
@@ -330,37 +351,145 @@ public partial class ExtrudeShape : Node3D
 		return intersect;
 	}
 
+	/*	expects 3 or 4 points
+		any 3 points can not for a triangle that sorrounds the other point
+		points must not be colinear */
+	Shape CreateShapeFromPoints(List<Vector2> points)
+	{
+		Shape newShape = new Shape(points, new List<int>());
+		//TODO check for colinearity??
+		if(points.Count != 3 && points.Count != 4)
+		{
+			GD.PushError("Points are not valid to make a new shape");
+			return newShape;
+		}
+
+		int[] pointOrder = TriangleGetFirstSecondPoint(points);
+		newShape.indicies.Add(pointOrder[0]);
+		newShape.indicies.Add(pointOrder[1]);
+		newShape.indicies.Add(pointOrder[2]);
+		
+		if(points.Count == 4)
+		{
+			int indexToIgnore = 0;
+			double longestDist = 0;
+			for(int i = 0; i < points.Count; i++)
+			{
+				double dist = Math.Sqrt( Math.Pow(points[i].X - points[pointOrder[3]].X, 2) + Math.Pow(points[i].Y - points[pointOrder[3]].Y, 2) );
+				if(dist > longestDist)
+				{
+					longestDist = dist;
+					indexToIgnore = i;
+				}
+			}
+			int[] pointOrder2 = TriangleGetFirstSecondPoint(points, indexToIgnore);
+			newShape.indicies.Add(pointOrder2[0]);
+			newShape.indicies.Add(pointOrder2[1]);
+			newShape.indicies.Add(pointOrder2[2]);
+		}
+		return newShape;
+	}
+
+	int[] TriangleGetFirstSecondPoint(List<Vector2> points, int indexToIgnore = -1)
+	{
+		int[] pointOrder = {-1, -1, -1, -1};
+
+		if(points.Count != 3 && points.Count != 4)
+		{
+			GD.PushError("Points are not valid to make a new shape!");
+			return pointOrder;
+		}
+		else if(points.Count == 3 && indexToIgnore != -1)
+		{
+			GD.PushError("index to ignore can only be used when give an array of 4 points!!!");
+			return pointOrder;
+		}
+
+		int firstPoint = -1; //lowest -if tie lowest leftmost
+		float lowest = points[0].Y;
+		for(int i = 1; i < points.Count; i++)
+		{
+			if(i != indexToIgnore && points[i].Y < lowest) lowest = points[i].Y;
+		}
+		//check for ties
+		int lowCnt = 0;
+		for(int i = 0; i < points.Count; i++)
+		{
+			if(i != indexToIgnore && points[i].Y == lowest)
+			{
+				lowCnt++;
+				firstPoint = i;
+			}
+		}
+		if(lowCnt > 1) //if tie
+		{
+			float leftMostLowest = points[firstPoint].X;
+			for(int i = 0; i < points.Count; i++)
+			{
+				if(i != indexToIgnore && points[i].Y == lowest && points[i].X < leftMostLowest) //if this is never true, the the leftMostLowest is already firstPoint, which is what we want
+				{
+					firstPoint = i;
+					break; //there will only ever be a tie between two points, or the points are in a line and do not for a triangle
+				}
+			}
+		}
+
+		int secondPoint = -1; //leftmost -if tie leftmost highest
+		float leftMost = points[firstPoint == 0 ? 1 : 0].X; //this need to not be the inital point, bc this will become the next point
+		for(int i = 1; i < points.Count; i++)
+		{
+			if(i != indexToIgnore && points[i].X < leftMost && i != firstPoint) leftMost = points[i].X;
+		}
+		//check for ties
+		int leftCnt = 0;
+		for(int i = 0; i < points.Count; i++)
+		{
+			if(i != indexToIgnore && points[i].X == leftMost && i != firstPoint)
+			{
+				leftCnt++;
+				secondPoint = i;
+			}
+		}
+		if(leftCnt > 1) //if tie
+		{
+			float highestLeftMost = points[secondPoint].Y;
+			for(int i = 0; i < points.Count; i++)
+			{
+				if(i != indexToIgnore && points[i].X == leftMost && points[i].Y > highestLeftMost && i != firstPoint)
+				{
+					secondPoint = i;
+					break;
+				}
+			}
+		}
+
+		pointOrder[0] = firstPoint;
+		pointOrder[1] = secondPoint;
+		for(int i = 0; i < points.Count; i++) if(i != indexToIgnore && i != firstPoint && i != secondPoint) pointOrder[2] = i;
+		if(points.Count == 4)
+		{
+			for(int i = 0; i < points.Count; i++) if(i != indexToIgnore && i != firstPoint && i != secondPoint && i != pointOrder[2]) pointOrder[3] = i;
+		}
+		return pointOrder;
+	}
+
 	public override void _Process(double delta)
 	{
 	}
 }
 
-class Shape
+public struct Shape
 {
-	public List<Vector2> vertecies = new List<Vector2>();
-	public List<int> indicies = new List<int>();
-};
-
-struct extraPointInfo
-{
-	public Vector2 point;
-	public Vector2 linePt1;
-	public Vector2 linePt2;
-	public extraPointInfo(Vector2 newPoint, Vector2 newLinePt1, Vector2 newLinePt2)
+	public List<Vector2> points;
+	public List<int> indicies;
+	public Shape(List<Vector2> newVert, List<int> newInd)
 	{
-		point = newPoint;
-		linePt1 = newLinePt1;
-		linePt2 = newLinePt2;
+		points = newVert;
+		indicies = newInd;
 	}
-};
-
-struct origianlPointInfo
-{
-	public Vector2 point;
-	public int shape = 0;
-	public origianlPointInfo(Vector2 newPoint, int newShape)
+	public Shape()
 	{
-		point = newPoint;
-		shape = newShape;
+		points = new List<Vector2>();
+		indicies = new List<int>();
 	}
 };

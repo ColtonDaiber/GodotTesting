@@ -1,0 +1,40 @@
+[33mcommit 33bb4a7651d230b0ec875763857fcb044b003168[m[33m ([m[1;36mHEAD -> [m[1;32mmaster[m[33m, [m[1;31morigin/master[m[33m)[m
+Author: coltLaptop <coltLaptop>
+Date:   Sat Oct 14 01:08:15 2023 -0500
+
+    worked on tri bisecting
+
+[33mcommit ee128ff0f9fda737a9c18ea5d970e42b9d0b308b[m
+Author: Coltm1911 <52213395+Coltm1911@users.noreply.github.com>
+Date:   Thu Oct 12 02:04:49 2023 -0500
+
+    finished finding intersection points
+    
+    added function to check which shape the old vertexs are in
+    
+    layed out how new meshes will be constructed in comments in
+    CutTriangle()
+
+[33mcommit b3aef3a3bfa0f149753676c9d00f2799e833aaa6[m
+Author: Coltm1911 <52213395+Coltm1911@users.noreply.github.com>
+Date:   Mon Oct 9 18:46:21 2023 -0500
+
+    working on triangle division
+
+[33mcommit 5363bdec2795bb5c4b1af4e9fe5a10e0503d20f9[m
+Author: Coltm1911 <52213395+Coltm1911@users.noreply.github.com>
+Date:   Mon Oct 9 00:28:17 2023 -0500
+
+    added extruded2d shape script
+
+[33mcommit dd496d75639f389c86bad09de4e4adedb335b079[m
+Author: Coltm1911 <52213395+Coltm1911@users.noreply.github.com>
+Date:   Wed Oct 4 22:56:29 2023 -0500
+
+    stuff?
+
+[33mcommit 488f7243bd03c20f273d7281b30f63be8afcc461[m
+Author: Coltm1911 <52213395+Coltm1911@users.noreply.github.com>
+Date:   Mon Oct 2 03:09:26 2023 -0500
+
+    Inital Commit
