@@ -1,6 +1,8 @@
 using Godot;
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Reflection.Metadata.Ecma335;
 using System.Transactions;
 
 [Tool]
@@ -174,13 +176,24 @@ public partial class ExtrudeShape : Node3D
 	public override void _Ready()
 	{
 		RemoveChildren();
-		// Extrude2DShape(pointsInShape, indiciesInShape, .25f);
+		// Extrude2DShape(pointsInShape, indiciesInShape, .5f);
 
-		int[] ind = {indiciesInShape[0], indiciesInShape[1], indiciesInShape[2]};
-		CutTriangle(pointsInShape, ind, new Vector2(2,2), new Vector2(0, 1));
+		// int[] ind = {indiciesInShape[0], indiciesInShape[1], indiciesInShape[2]};
+		// CutTriangle(pointsInShape, ind, new Vector2(2,1), new Vector2(0, 1));
 
 		// Shape newShape = CreateShapeFromPoints(new List<Vector2>(pointsInShape));
 		// Extrude2DShape(newShape.points, newShape.indicies, .25f);
+
+		Shape[] shapes = CutShape(pointsInShape, indiciesInShape, new Vector2(2,1), new Vector2(0, 1));
+		for(int i = 0; i < shapes[0].points.Count; i++)
+		{
+			GD.Print(shapes[0].points[i]);
+		}
+		for(int i = 0; i < shapes[0].indicies.Count; i++)
+		{
+			GD.Print(shapes[0].indicies[i]);
+		}
+		Extrude2DShape(shapes[0], 0.5f);
 	}
 
 	void RemoveChildren()
@@ -189,6 +202,41 @@ public partial class ExtrudeShape : Node3D
 		for(int i = children.Count - 1; i >= 0; i--)
 		{
 			if(children[i] != physicsBody) children[i].QueueFree();
+		}
+	}
+
+	Shape[] CutShape(Vector2[] verticies, int[] indicies, Vector2 pt1, Vector2 pt2)
+	{
+		Shape[] newShapes = {new Shape(), new Shape()};
+
+		if(indicies.Length % 3 != 0)
+		{
+			GD.PushError("Indicies length needs to be a multiple of three!");
+			return newShapes;
+		}
+
+		for(int i = 0; i < indicies.Length; i += 3)
+		{
+			int[] triIndicies = {i, i+1, i+2};
+
+			Shape[] cutTriangles = CutTriangle(verticies, triIndicies, pt1, pt2);
+
+			List<int> cutIndex0 = new List<int>();
+			List<int> shapeIndex0 = new List<int>();
+			for(int w = 0; w < cutTriangles[0].points.Count; w++)
+			{
+
+			}
+		}
+
+		return newShapes;
+	}
+
+	void AddShapeToShape(Shape originalShape, Shape addShape)
+	{
+		for(int ind = 0; ind < addShape.indicies.Count; ind++)
+		{
+			
 		}
 	}
 
@@ -283,17 +331,14 @@ public partial class ExtrudeShape : Node3D
 			}
 		}
 
-		GD.Print(pointsInShape1.Count);
-		GD.Print(pointsInShape2.Count);
-		for(int i = 0; i < pointsInShape2.Count; i++) GD.Print(pointsInShape2[i]);
+		// GD.Print(pointsInShape1.Count);
+		// GD.Print(pointsInShape2.Count);
+		// for(int i = 0; i < pointsInShape1.Count; i++) GD.Print(pointsInShape1[i]);
 
 		Shape triangles1 = new Shape();
 		Shape triangles2 = new Shape();
 		if(pointsInShape1.Count > 0) triangles1 = CreateShapeFromPoints(pointsInShape1);
 		if(pointsInShape2.Count > 0) triangles2 = CreateShapeFromPoints(pointsInShape2);
-
-
-		Extrude2DShape(triangles2, 1);
 
 		returnShapes[0] = triangles1;
 		returnShapes[1] = triangles2;
@@ -302,6 +347,7 @@ public partial class ExtrudeShape : Node3D
 		// for(int i = 0; i < triangles2.indicies.Count; i++) GD.Print(triangles2.indicies[i]);
 		// for(int i = 0; i < triangles1.points.Count; i++) GD.Print(triangles1.points[i]);
 		// for(int i = 0; i < triangles1.indicies.Count; i++) GD.Print(triangles1.indicies[i]);
+		// Extrude2DShape(triangles2, .5f);
 		return returnShapes;
 
 		//make a list of all points, intersection and old vertices
@@ -387,7 +433,7 @@ public partial class ExtrudeShape : Node3D
 		return newShape;
 	}
 
-	int[] TriangleGetFirstSecondPoint(List<Vector2> points, int indexToIgnore = -1)
+	int[] TriangleGetFirstSecondPoint(List<Vector2> points)
 	{
 		int[] pointOrder = {-1, -1, -1, -1};
 
@@ -396,23 +442,18 @@ public partial class ExtrudeShape : Node3D
 			GD.PushError("Points are not valid to make a new shape!");
 			return pointOrder;
 		}
-		else if(points.Count == 3 && indexToIgnore != -1)
-		{
-			GD.PushError("index to ignore can only be used when give an array of 4 points!!!");
-			return pointOrder;
-		}
 
 		int firstPoint = -1; //lowest -if tie lowest leftmost
 		float lowest = points[0].Y;
 		for(int i = 1; i < points.Count; i++)
 		{
-			if(i != indexToIgnore && points[i].Y < lowest) lowest = points[i].Y;
+			if(points[i].Y < lowest) lowest = points[i].Y;
 		}
 		//check for ties
 		int lowCnt = 0;
 		for(int i = 0; i < points.Count; i++)
 		{
-			if(i != indexToIgnore && points[i].Y == lowest)
+			if(points[i].Y == lowest)
 			{
 				lowCnt++;
 				firstPoint = i;
@@ -423,7 +464,7 @@ public partial class ExtrudeShape : Node3D
 			float leftMostLowest = points[firstPoint].X;
 			for(int i = 0; i < points.Count; i++)
 			{
-				if(i != indexToIgnore && points[i].Y == lowest && points[i].X < leftMostLowest) //if this is never true, the the leftMostLowest is already firstPoint, which is what we want
+				if(points[i].Y == lowest && points[i].X < leftMostLowest) //if this is never true, the the leftMostLowest is already firstPoint, which is what we want
 				{
 					firstPoint = i;
 					break; //there will only ever be a tie between two points, or the points are in a line and do not for a triangle
@@ -435,13 +476,13 @@ public partial class ExtrudeShape : Node3D
 		float leftMost = points[firstPoint == 0 ? 1 : 0].X; //this need to not be the inital point, bc this will become the next point
 		for(int i = 1; i < points.Count; i++)
 		{
-			if(i != indexToIgnore && points[i].X < leftMost && i != firstPoint) leftMost = points[i].X;
+			if(points[i].X < leftMost && i != firstPoint) leftMost = points[i].X;
 		}
 		//check for ties
 		int leftCnt = 0;
 		for(int i = 0; i < points.Count; i++)
 		{
-			if(i != indexToIgnore && points[i].X == leftMost && i != firstPoint)
+			if(points[i].X == leftMost && i != firstPoint)
 			{
 				leftCnt++;
 				secondPoint = i;
@@ -452,7 +493,7 @@ public partial class ExtrudeShape : Node3D
 			float highestLeftMost = points[secondPoint].Y;
 			for(int i = 0; i < points.Count; i++)
 			{
-				if(i != indexToIgnore && points[i].X == leftMost && points[i].Y > highestLeftMost && i != firstPoint)
+				if(points[i].X == leftMost && points[i].Y > highestLeftMost && i != firstPoint)
 				{
 					secondPoint = i;
 					break;
@@ -462,10 +503,10 @@ public partial class ExtrudeShape : Node3D
 
 		pointOrder[0] = firstPoint;
 		pointOrder[1] = secondPoint;
-		for(int i = 0; i < points.Count; i++) if(i != indexToIgnore && i != firstPoint && i != secondPoint) pointOrder[2] = i;
+		for(int i = 0; i < points.Count; i++) if(i != firstPoint && i != secondPoint) pointOrder[2] = i;
 		if(points.Count == 4)
 		{
-			for(int i = 0; i < points.Count; i++) if(i != indexToIgnore && i != firstPoint && i != secondPoint && i != pointOrder[2]) pointOrder[3] = i;
+			for(int i = 0; i < points.Count; i++) if(i != firstPoint && i != secondPoint && i != pointOrder[2]) pointOrder[3] = i;
 		}
 		return pointOrder;
 	}
@@ -475,7 +516,7 @@ public partial class ExtrudeShape : Node3D
 	}
 }
 
-public struct Shape
+public class Shape
 {
 	public List<Vector2> points;
 	public List<int> indicies;
@@ -488,5 +529,18 @@ public struct Shape
 	{
 		points = new List<Vector2>();
 		indicies = new List<int>();
+	}
+
+	//return index if point is in shape, otherwise returns -1
+	public int PointInShape(Vector2 point)
+	{
+		for(int i = 0; i < this.points.Count; i++)
+		{
+			if(this.points[i].X == point.X && this.points[i].Y == point.Y)
+			{
+				return i;
+			}
+		}
+		return -1;
 	}
 };
