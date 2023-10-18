@@ -10,29 +10,29 @@ public partial class ExtrudeShape : Node3D
 {
 	[Export] public Node3D physicsBody;
 
-	//inital shape
-	// public Vector2[] pointsInShape = 
-	// {
-	// 	new Vector2(0,0),
-	// 	new Vector2(2,0),
-	// 	new Vector2(2,2),
-	// 	new Vector2(0,2)
-	// };
-	// public int[] indiciesInShape =
-	// {
-	// 	0,3,2,
-	// 	0,2,1
-	// };
+	// inital shape
 	public Vector2[] pointsInShape = 
 	{
 		new Vector2(0,0),
+		new Vector2(2,0),
 		new Vector2(2,2),
 		new Vector2(0,2)
 	};
 	public int[] indiciesInShape =
 	{
+		0,3,2,
 		0,2,1
 	};
+	// public Vector2[] pointsInShape = 
+	// {
+	// 	new Vector2(0,0),
+	// 	new Vector2(2,2),
+	// 	new Vector2(0,2)
+	// };
+	// public int[] indiciesInShape =
+	// {
+	// 	0,2,1
+	// };
 
 	MeshInstance3D meshInstance;
 	CollisionShape3D collisionShape;
@@ -179,21 +179,22 @@ public partial class ExtrudeShape : Node3D
 		// Extrude2DShape(pointsInShape, indiciesInShape, .5f);
 
 		// int[] ind = {indiciesInShape[0], indiciesInShape[1], indiciesInShape[2]};
-		// CutTriangle(pointsInShape, ind, new Vector2(2,1), new Vector2(0, 1));
+		// Shape[] shapes = CutTriangle(pointsInShape, ind, new Vector2(0,2), new Vector2(1,2));
+		// Extrude2DShape(shapes[1], 0.5f);
 
 		// Shape newShape = CreateShapeFromPoints(new List<Vector2>(pointsInShape));
 		// Extrude2DShape(newShape.points, newShape.indicies, .25f);
 
-		Shape[] shapes = CutShape(pointsInShape, indiciesInShape, new Vector2(2,1), new Vector2(0, 1));
-		for(int i = 0; i < shapes[0].points.Count; i++)
-		{
-			GD.Print(shapes[0].points[i]);
-		}
-		for(int i = 0; i < shapes[0].indicies.Count; i++)
-		{
-			GD.Print(shapes[0].indicies[i]);
-		}
-		Extrude2DShape(shapes[0], 0.5f);
+		Shape[] shapes = CutShape(pointsInShape, indiciesInShape, new Vector2(0,2), new Vector2(0,1));
+		Extrude2DShape(shapes[1], 0.5f);
+
+		GD.Print("shape 1");
+		for(int i = 0; i < shapes[0].points.Count; i++) GD.Print(shapes[0].points[i]);
+		for(int i = 0; i < shapes[0].indicies.Count; i++) GD.Print(shapes[0].indicies[i]);
+		GD.Print("shape 2");
+		for(int i = 0; i < shapes[1].points.Count; i++) GD.Print(shapes[1].points[i]);
+		for(int i = 0; i < shapes[1].indicies.Count; i++) GD.Print(shapes[1].indicies[i]);
+		
 	}
 
 	void RemoveChildren()
@@ -217,26 +218,35 @@ public partial class ExtrudeShape : Node3D
 
 		for(int i = 0; i < indicies.Length; i += 3)
 		{
-			int[] triIndicies = {i, i+1, i+2};
+			int[] triIndicies = {indicies[i], indicies[i+1], indicies[i+2]};
 
 			Shape[] cutTriangles = CutTriangle(verticies, triIndicies, pt1, pt2);
 
-			List<int> cutIndex0 = new List<int>();
-			List<int> shapeIndex0 = new List<int>();
-			for(int w = 0; w < cutTriangles[0].points.Count; w++)
-			{
-
-			}
+			if(cutTriangles[0].indicies.Count > 0) AddTrianglesToShape(newShapes[0], cutTriangles[0]);
+			if(cutTriangles[1].indicies.Count > 0) AddTrianglesToShape(newShapes[1], cutTriangles[1]);
 		}
 
 		return newShapes;
 	}
-
-	void AddShapeToShape(Shape originalShape, Shape addShape)
+	void AddTrianglesToShape(Shape shape, Shape triangles)
 	{
-		for(int ind = 0; ind < addShape.indicies.Count; ind++)
+		List<int> cutToNewShapeIndicies = new List<int>();
+		for(int w = 0; w < triangles.points.Count; w++)
 		{
-			
+			int pointInShape = shape.PointInShape(triangles.points[w]);
+			if(pointInShape == -1)
+			{
+				cutToNewShapeIndicies.Add(shape.points.Count);
+				shape.points.Add(triangles.points[w]);
+			}
+			else
+			{
+				cutToNewShapeIndicies.Add(pointInShape);
+			}
+		}
+		for(int w = 0; w < triangles.indicies.Count; w++)
+		{
+			shape.indicies.Add(cutToNewShapeIndicies[triangles.indicies[w]]);
 		}
 	}
 
@@ -275,13 +285,50 @@ public partial class ExtrudeShape : Node3D
 			if(shapeNum == 1) pointsInShape1.Add(verticies[indicies[i]]);
 			else if(shapeNum == -1) pointsInShape2.Add(verticies[indicies[i]]);
 			else if(shapeNum == 0)
-			{
+			{ //fix cursed edge case shit
 				int index3 = ((2+1 - i) - index2);
 				int index2ShapeNum = GetShapePointIsIn(lineCutSlope, pt1, verticies[indicies[index2]]);
 				int index3ShapeNum = GetShapePointIsIn(lineCutSlope, pt1, verticies[indicies[index3]]);
 				if( index2ShapeNum != index3ShapeNum && index2ShapeNum != 0 && index3ShapeNum != 0)
 				{
+					pointsInShape1.Add(verticies[indicies[i]]);
+					pointsInShape2.Add(verticies[indicies[i]]);
 					continue;
+				}
+				else if(index2ShapeNum == index3ShapeNum && index2ShapeNum != 0)
+				{
+					pointsInShape1.Clear();
+					pointsInShape2.Clear();
+					for(int w = 0; w < 3; w++)
+					{
+						if(index2ShapeNum == 1) pointsInShape1.Add(verticies[indicies[w]]);
+						else pointsInShape2.Add(verticies[indicies[w]]);
+					}
+					break;
+				}
+				else if(index2ShapeNum == 0) //if true, cut is same line as one of the triangles edges
+				{
+					GD.Print("2-");
+					pointsInShape1.Clear();
+					pointsInShape2.Clear();
+					for(int w = 0; w < 3; w++)
+					{
+						if(index3ShapeNum == 1) pointsInShape1.Add(verticies[indicies[w]]);
+						else pointsInShape2.Add(verticies[indicies[w]]);
+					}
+					break;
+				}
+				else if(index3ShapeNum == 0) //if true, cut is same line as one of the triangles edges
+				{
+					GD.Print("3-");
+					pointsInShape1.Clear();
+					pointsInShape2.Clear();
+					for(int w = 0; w < 3; w++)
+					{
+						if(index2ShapeNum == 1) pointsInShape1.Add(verticies[indicies[w]]);
+						else pointsInShape2.Add(verticies[indicies[w]]);
+					}
+					break;
 				}
 			}
 
@@ -330,26 +377,18 @@ public partial class ExtrudeShape : Node3D
 				pointsInShape2.Add(new Vector2(x,y));
 			}
 		}
-
-		// GD.Print(pointsInShape1.Count);
-		// GD.Print(pointsInShape2.Count);
-		// for(int i = 0; i < pointsInShape1.Count; i++) GD.Print(pointsInShape1[i]);
-
 		Shape triangles1 = new Shape();
 		Shape triangles2 = new Shape();
+		GD.Print(pointsInShape1.Count);
+		GD.Print(pointsInShape2.Count);
 		if(pointsInShape1.Count > 0) triangles1 = CreateShapeFromPoints(pointsInShape1);
 		if(pointsInShape2.Count > 0) triangles2 = CreateShapeFromPoints(pointsInShape2);
 
 		returnShapes[0] = triangles1;
 		returnShapes[1] = triangles2;
-
-		// for(int i = 0; i < triangles2.points.Count; i++) GD.Print(triangles2.points[i]);
-		// for(int i = 0; i < triangles2.indicies.Count; i++) GD.Print(triangles2.indicies[i]);
-		// for(int i = 0; i < triangles1.points.Count; i++) GD.Print(triangles1.points[i]);
-		// for(int i = 0; i < triangles1.indicies.Count; i++) GD.Print(triangles1.indicies[i]);
-		// Extrude2DShape(triangles2, .5f);
 		return returnShapes;
 
+		/*
 		//make a list of all points, intersection and old vertices
 		//for single triangle shape
 			//add points that are in shape, and add their index
@@ -362,8 +401,7 @@ public partial class ExtrudeShape : Node3D
 			//iterate through shape and look for points that match the new list of points
 				//if match found change indicies list to have the index that's in the orignal shape
 			//add intersections to list of points, and convert any indecies' indexs in new shape into the mesh's indexs
-		
-
+		*/
 	}
 
 	int GetShapePointIsIn(float slope, Vector2 linePt, Vector2 vertex)
