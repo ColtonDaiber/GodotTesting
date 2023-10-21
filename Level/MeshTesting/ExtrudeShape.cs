@@ -8,8 +8,7 @@ using System.Transactions;
 [Tool]
 public partial class ExtrudeShape : Node3D
 {
-	[Export] public Node3D physicsBody;
-
+	[Export] RigidBody3D physBody;
 	// inital shape
 	// public Vector2[] pointsInShape = 
 	// {
@@ -35,58 +34,79 @@ public partial class ExtrudeShape : Node3D
 	// 	4,2,3,
 	// 	3,2,1
 	// };
-	public Vector2[] pointsInShape = 
-	{
-		new Vector2(0,0),
-		new Vector2(2,0),
-		new Vector2(2,2),
-		new Vector2(0,2)
-	};
-	public int[] indiciesInShape =
-	{
-		0,3,2,
-		0,2,1
-	};
 	// public Vector2[] pointsInShape = 
 	// {
 	// 	new Vector2(0,0),
+	// 	new Vector2(2,0),
 	// 	new Vector2(2,2),
 	// 	new Vector2(0,2)
 	// };
 	// public int[] indiciesInShape =
 	// {
+	// 	0,3,2,
 	// 	0,2,1
 	// };
-
-	MeshInstance3D meshInstance;
-	CollisionShape3D collisionShape;
-
-	public void Create3DShape(Vector3[] vertexs, int[] indicies)
+	public Vector2[] pointsInShape = 
 	{
+		new Vector2(0,0),
+		new Vector2(2,2),
+		new Vector2(0,2)
+	};
+	public int[] indiciesInShape =
+	{
+		0,2,1
+	};
+
+	public void Create3DShape(RigidBody3D body, Shape3D shape)
+	{
+		Create3DShape(body, shape.verticies, shape.indicies);
+	}
+	public void Create3DShape(RigidBody3D body, List<Vector3> vertexs, List<int> indicies)
+	{
+		Vector3[] vertArray = new Vector3[vertexs.Count];
+		for(int i = 0; i < vertexs.Count; i++) vertArray[i] = vertexs[i];
+
+		int[] indArray = new int[indicies.Count];
+		for(int i = 0; i < indicies.Count; i++) indArray[i] = indicies[i];
+
+		Create3DShape(body, vertArray, indArray);
+	}
+	public void Create3DShape(RigidBody3D body, Vector3[] vertexs, int[] indicies)
+	{
+		MeshInstance3D meshInstance = null;
+		CollisionShape3D collisionShape = null;
 		var arrays = new Godot.Collections.Array();
 		arrays.Resize((int)Mesh.ArrayType.Max);
 		arrays[(int)Mesh.ArrayType.Vertex] = vertexs;
 		arrays[(int)Mesh.ArrayType.Index] = indicies;
 
-
 		ArrayMesh mesh = new ArrayMesh();
 		mesh.AddSurfaceFromArrays(Mesh.PrimitiveType.Triangles, arrays);
 
+		for(int i = 0; i < body.GetChildCount(); i++)
+		{
+			collisionShape = body.GetChildOrNull<CollisionShape3D>(i);
+			if(collisionShape != null) break;
+		}
+		for(int i = 0; i < body.GetChildCount(); i++)
+		{
+			meshInstance = body.GetChildOrNull<MeshInstance3D>(i);
+			if(meshInstance != null) break;
+		}
 		if(meshInstance == null)
 		{
 			meshInstance = new MeshInstance3D();
-			physicsBody.AddChild(meshInstance);
+			body.AddChild(meshInstance);
 		}
 		if(collisionShape == null)
 		{
 			collisionShape = new CollisionShape3D();
-			physicsBody.AddChild(collisionShape);
+			body.AddChild(collisionShape);
 		}
 		
 		meshInstance.Mesh = mesh;
 		collisionShape.Shape = mesh.CreateConvexShape();
 
-		RigidBody3D body = (RigidBody3D)physicsBody;
 		body.CenterOfMassMode = RigidBody3D.CenterOfMassModeEnum.Custom;
 		Vector3 centerOfMass = new Vector3(0,0,0);
 		for(int i = 0; i < vertexs.Length; i++) centerOfMass += vertexs[i];
@@ -94,11 +114,11 @@ public partial class ExtrudeShape : Node3D
 		body.CenterOfMass = centerOfMass;
 	}
 
-	public void Extrude2DShape(Shape shape, float extrudeDist)
+	public Shape3D Extrude2DShape(Shape shape, float extrudeDist)
 	{
-		Extrude2DShape(shape.points, shape.indicies, extrudeDist);
+		return Extrude2DShape(shape.points, shape.indicies, extrudeDist);
 	}
-	public void Extrude2DShape(List<Vector2> points, List<int> indicies, float extrudeDist)
+	public Shape3D Extrude2DShape(List<Vector2> points, List<int> indicies, float extrudeDist)
 	{
 		Vector2[] pointsArr = new Vector2[points.Count];
 		for(int i = 0; i < points.Count; i++) pointsArr[i] = points[i];
@@ -106,14 +126,14 @@ public partial class ExtrudeShape : Node3D
 		int[] indiciesArr = new int[indicies.Count];
 		for(int i = 0; i < indicies.Count; i++) indiciesArr[i] = indicies[i];
 
-		Extrude2DShape(pointsArr, indiciesArr, extrudeDist);
+		return Extrude2DShape(pointsArr, indiciesArr, extrudeDist);
 	}
-	public void Extrude2DShape(Vector2[] points, int[] indicies, float extrudeDist)
+	public Shape3D Extrude2DShape(Vector2[] points, int[] indicies, float extrudeDist)
 	{
 		if(indicies.Length % 3 != 0) //this stores list of triangles, so if its not a multiple of 3, theres an error
 		{
 			GD.PushError("invalid indicies array");
-			return;
+			return new Shape3D();
 		}
 
 		//get all new faces from lines
@@ -180,7 +200,8 @@ public partial class ExtrudeShape : Node3D
 		int[] indicies3D = new int[indicies.Length + addIndicies.Count];
 		for(int i = 0; i < indicies.Length; i++) indicies3D[i] = indicies[i];
 		for(int i = 0; i < addIndicies.Count; i++) indicies3D[i+indicies.Length] = addIndicies[i];
-		Create3DShape(verticies, indicies3D);
+
+		return new Shape3D(new List<Vector3>(verticies), new List<int>(indicies3D));
 	}
 
 
@@ -199,44 +220,47 @@ public partial class ExtrudeShape : Node3D
 
 	public override void _Ready()
 	{
-		RemoveChildren();
-		// Extrude2DShape(pointsInShape, indiciesInShape, .5f);
+	// 	RemoveChildren();
+	// 	// Extrude2DShape(pointsInShape, indiciesInShape, .5f);
 
-		// int[] ind = {indiciesInShape[0], indiciesInShape[1], indiciesInShape[2]};
-		// Shape[] shapes = CutTriangle(pointsInShape, ind, new Vector2(0,2), new Vector2(1,2));
-		// Extrude2DShape(shapes[1], 0.5f);
+	// Shape3D shape3D = Extrude2DShape(pointsInShape, indiciesInShape, 0.5f);
+	// Create3DShape(physBody, shape3D);
 
-		// Shape newShape = CreateShapeFromPoints(new List<Vector2>(pointsInShape));
-		// Extrude2DShape(newShape.points, newShape.indicies, .25f);
+	// 	// int[] ind = {indiciesInShape[0], indiciesInShape[1], indiciesInShape[2]};
+	// 	// Shape[] shapes = CutTriangle(pointsInShape, ind, new Vector2(0,2), new Vector2(1,2));
+	// 	// Extrude2DShape(shapes[1], 0.5f);
 
-		Shape[] shapes = CutShape(pointsInShape, indiciesInShape, new Vector2(1, 1), new Vector2(0,3));
-		if(shapes[0].indicies.Count >= 3) Extrude2DShape(shapes[0], 0.5f);
-		if(shapes[1].indicies.Count >= 3) Extrude2DShape(shapes[1], 0.5f);
-		for(int i = 0; i < shapes[0].points.Count; i++) GD.Print(shapes[0].points[i]);
-		for(int i = 0; i < shapes[0].indicies.Count; i++) GD.Print(shapes[0].indicies[i]);
+	// 	// Shape newShape = CreateShapeFromPoints(new List<Vector2>(pointsInShape));
+	// 	// Extrude2DShape(newShape.points, newShape.indicies, .25f);
+
+	// 	Shape[] shapes = CutShape(pointsInShape, indiciesInShape, new Vector2(1, 1), new Vector2(0,3));
+	// 	if(shapes[0].indicies.Count >= 3) Extrude2DShape(shapes[0], 0.5f);
+	// 	if(shapes[1].indicies.Count >= 3) Extrude2DShape(shapes[1], 0.5f);
+	// 	for(int i = 0; i < shapes[0].points.Count; i++) GD.Print(shapes[0].points[i]);
+	// 	for(int i = 0; i < shapes[0].indicies.Count; i++) GD.Print(shapes[0].indicies[i]);
 
 
-		Shape[] shapes2 = CutShape(shapes[0].points, shapes[0].indicies, new Vector2(0, .5f), new Vector2(2,2));
-		if(shapes2[0].indicies.Count >= 3) Extrude2DShape(shapes2[0], 0.5f);
-		if(shapes2[1].indicies.Count >= 3) Extrude2DShape(shapes2[1], 0.5f);
+	// 	Shape[] shapes2 = CutShape(shapes[0].points, shapes[0].indicies, new Vector2(0, .5f), new Vector2(2,2));
+	// 	if(shapes2[0].indicies.Count >= 3) Extrude2DShape(shapes2[0], 0.5f);
+	// 	if(shapes2[1].indicies.Count >= 3) Extrude2DShape(shapes2[1], 0.5f);
 
-		Shape[] shapes3 = CutShape(shapes2[1].points, shapes2[1].indicies, new Vector2(1, 1), new Vector2(2,1.25f));
-		if(shapes3[0].indicies.Count >= 3) Extrude2DShape(shapes3[0], 0.5f);
-		if(shapes3[1].indicies.Count >= 3) Extrude2DShape(shapes3[1], 0.5f);
+	// 	Shape[] shapes3 = CutShape(shapes2[1].points, shapes2[1].indicies, new Vector2(1, 1), new Vector2(2,1.25f));
+	// 	if(shapes3[0].indicies.Count >= 3) Extrude2DShape(shapes3[0], 0.5f);
+	// 	if(shapes3[1].indicies.Count >= 3) Extrude2DShape(shapes3[1], 0.5f);
 
-		// GD.Print("shape 1");
-		// for(int i = 0; i < shapes[0].points.Count; i++) GD.Print(shapes[0].points[i]);
-		// for(int i = 0; i < shapes[0].indicies.Count; i++) GD.Print(shapes[0].indicies[i]);
-		// GD.Print("shape 2");
-		// for(int i = 0; i < shapes[1].points.Count; i++) GD.Print(shapes[1].points[i]);
-		// for(int i = 0; i < shapes[1].indicies.Count; i++) GD.Print(shapes[1].indicies[i]);
+	// 	// GD.Print("shape 1");
+	// 	// for(int i = 0; i < shapes[0].points.Count; i++) GD.Print(shapes[0].points[i]);
+	// 	// for(int i = 0; i < shapes[0].indicies.Count; i++) GD.Print(shapes[0].indicies[i]);
+	// 	// GD.Print("shape 2");
+	// 	// for(int i = 0; i < shapes[1].points.Count; i++) GD.Print(shapes[1].points[i]);
+	// 	// for(int i = 0; i < shapes[1].indicies.Count; i++) GD.Print(shapes[1].indicies[i]);
 
-		// Shape[] shapes2 = CutShape(pointsInShape, indiciesInShape, new Vector2(0, .5f), new Vector2(2,2));
-		// if(shapes2[0].indicies.Count >= 3) Extrude2DShape(shapes2[0], 0.5f);
+	// 	// Shape[] shapes2 = CutShape(pointsInShape, indiciesInShape, new Vector2(0, .5f), new Vector2(2,2));
+	// 	// if(shapes2[0].indicies.Count >= 3) Extrude2DShape(shapes2[0], 0.5f);
 
-		// int[] ind = {indiciesInShape[0], indiciesInShape[1], indiciesInShape[2]};
-		// Shape[] shapes = CutTriangle(pointsInShape, ind, new Vector2(0, .5f), new Vector2(2,2));
-		// Extrude2DShape(shapes[1], 0.5f);
+	// 	// int[] ind = {indiciesInShape[0], indiciesInShape[1], indiciesInShape[2]};
+	// 	// Shape[] shapes = CutTriangle(pointsInShape, ind, new Vector2(0, .5f), new Vector2(2,2));
+	// 	// Extrude2DShape(shapes[1], 0.5f);
 	}
 
 	void RemoveChildren()
@@ -244,11 +268,15 @@ public partial class ExtrudeShape : Node3D
 		var children = this.GetChildren();
 		for(int i = children.Count - 1; i >= 0; i--)
 		{
-			if(children[i] != physicsBody) children[i].QueueFree();
+			children[i].QueueFree();
 		}
 	}
 
-	Shape[] CutShape(List<Vector2> verticies, List<int> indicies, Vector2 pt1, Vector2 pt2)
+	public Shape[] CutShape(Shape shape, Vector2 pt1, Vector2 pt2)
+	{
+		return CutShape(shape.points, shape.indicies, pt1, pt2);
+	}
+	public Shape[] CutShape(List<Vector2> verticies, List<int> indicies, Vector2 pt1, Vector2 pt2)
 	{
 		Vector2[] verticesArray = new Vector2[verticies.Count];
 		int[] indiciesArray = new int[indicies.Count];
@@ -256,7 +284,7 @@ public partial class ExtrudeShape : Node3D
 		for(int i = 0; i < indicies.Count; i++) indiciesArray[i] = indicies[i];
 		return CutShape(verticesArray, indiciesArray, pt1, pt2);
 	}
-	Shape[] CutShape(Vector2[] verticies, int[] indicies, Vector2 pt1, Vector2 pt2)
+	public Shape[] CutShape(Vector2[] verticies, int[] indicies, Vector2 pt1, Vector2 pt2)
 	{
 		Shape[] newShapes = {new Shape(), new Shape()};
 
@@ -444,6 +472,11 @@ public partial class ExtrudeShape : Node3D
 		*/
 	}
 
+	int GetShapePointIsIn(Vector2 pt1, Vector2 pt2, Vector2 testPoint)
+	{
+		float slope = (pt1.Y-pt2.Y)/(pt1.X-pt2.X);
+		return GetShapePointIsIn(slope, pt1, testPoint);
+	}
 	int GetShapePointIsIn(float slope, Vector2 linePt, Vector2 vertex)
 	{
 		if(!float.IsInfinity(slope))
@@ -487,7 +520,7 @@ public partial class ExtrudeShape : Node3D
 	/*	expects 3 or 4 points
 		any 3 points can not for a triangle that sorrounds the other point
 		points must not be colinear */
-	Shape CreateShapeFromPoints(List<Vector2> points)
+	public Shape CreateShapeFromPoints(List<Vector2> points)
 	{
 		Shape newShape = new Shape(points, new List<int>());
 		if(points.Count != 3 && points.Count != 4)
@@ -503,9 +536,31 @@ public partial class ExtrudeShape : Node3D
 		
 		if(points.Count == 4)
 		{
-			newShape.indicies.Add(pointOrder[2]);
-			newShape.indicies.Add(pointOrder[1]);
-			newShape.indicies.Add(pointOrder[3]);
+			int farthestPoint = -1;
+			double farthestDist = 0;
+			for(int i = 0; i < points.Count; i++)
+			{
+				if(i == pointOrder[3]) continue;
+				double dist = Math.Sqrt( Mathf.Pow((points[pointOrder[3]].X - points[i].X),2) + Mathf.Pow((points[pointOrder[3]].Y - points[i].Y),2) );
+				if( dist > farthestDist)
+				{
+					farthestPoint = i;
+					farthestDist = dist;
+				}
+			}
+
+			if( GetShapePointIsIn(points[pointOrder[0]], points[pointOrder[1]], points[pointOrder[2]]) == GetShapePointIsIn(points[pointOrder[0]], points[pointOrder[1]], points[pointOrder[3]]))
+			{
+				newShape.indicies.Add(pointOrder[2]);
+				newShape.indicies.Add(pointOrder[1]);
+				newShape.indicies.Add(pointOrder[3]);
+			}
+			else
+			{
+				newShape.indicies.Add(pointOrder[0]);
+				newShape.indicies.Add(pointOrder[3]);
+				newShape.indicies.Add(pointOrder[1]);
+			}
 		}
 		return newShape;
 	}
@@ -580,11 +635,22 @@ public partial class ExtrudeShape : Node3D
 
 		pointOrder[0] = firstPoint;
 		pointOrder[1] = secondPoint;
-		for(int i = 0; i < points.Count; i++) if(i != firstPoint && i != secondPoint) pointOrder[2] = i;
 		if(points.Count == 4)
 		{
+			int rightMostIndex = -1;
+			float rightVal = float.NegativeInfinity;
+			for(int i = 0; i < points.Count; i++)
+			{
+				if(i != firstPoint && i != secondPoint && points[i].X > rightVal)
+				{
+					rightVal = points[i].X;
+					rightMostIndex = i;
+				}
+			}
+			pointOrder[2] = rightMostIndex;
 			for(int i = 0; i < points.Count; i++) if(i != firstPoint && i != secondPoint && i != pointOrder[2]) pointOrder[3] = i;
 		}
+		else for(int i = 0; i < points.Count; i++) if(i != firstPoint && i != secondPoint) pointOrder[2] = i;
 		return pointOrder;
 	}
 
@@ -601,6 +667,11 @@ public class Shape
 	{
 		points = newVert;
 		indicies = newInd;
+	}
+	public Shape(Vector2[] newVert, int[] newInd)
+	{
+		points = new List<Vector2>(newVert);
+		indicies = new List<int>(newInd);
 	}
 	public Shape()
 	{
@@ -619,5 +690,26 @@ public class Shape
 			}
 		}
 		return -1;
+	}
+};
+
+public class Shape3D
+{
+	public List<Vector3> verticies;
+	public List<int> indicies;
+	public Shape3D(List<Vector3> newVert, List<int> newInd)
+	{
+		verticies = newVert;
+		indicies = newInd;
+	}
+	public Shape3D(Vector3[] newVert, int[] newInd)
+	{
+		verticies = new List<Vector3>(newVert);
+		indicies = new List<int>(newInd);
+	}
+	public Shape3D()
+	{
+		verticies = new List<Vector3>();
+		indicies = new List<int>();
 	}
 };
