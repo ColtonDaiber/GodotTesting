@@ -2,8 +2,9 @@ using Godot;
 using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using System.Threading;
 
-[Tool]
+// [Tool]
 public partial class Glass : Node3D
 {
 	[Export] public RigidBody3D body3D;
@@ -26,11 +27,39 @@ public partial class Glass : Node3D
 		0,3,2,
 		0,2,1
 	};
+	// public Vector2[] initalPoints = 
+	// {
+	// 	new Vector2(0, 0),
+	// 	new Vector2(2.7142856f, 2.7142856f),
+	// 	new Vector2(5, 1),
+	// 	new Vector2(5, 0)
+	// };
+
+	// tris
+	// public Vector2[] initalPoints = 
+	// // {
+	// // 	new Vector2(0, 0),
+	// // 	new Vector2(1, 0),
+	// // 	new Vector2(2, 2),
+	// // };
+	// {
+	// 	new Vector2(0, 0),
+	// 	new Vector2(2.5f, 2.5f),
+	// 	new Vector2(4.4f, 5),
+	// };
+	const bool canBreak = true;
 	Shape initalShape;
 	ExtrudeShape extrudeShape = new ExtrudeShape();
 
+	List<Shape> shapeList;
+	private RandomNumberGenerator random = new RandomNumberGenerator();
 	public override void _Ready()
 	{
+		// random.Randomize(); //sets seed
+		random.Seed = 1;
+		initalShape = new Shape(initalPoints, initalIndicies);
+		// initalShape = extrudeShape.CreateShapeFromPoints(new List<Vector2>(initalPoints));
+		shapeList = new List<Shape>{initalShape};
 		for(int i = 0; i < this.GetChildCount(); i++)
 		{
 			body3D = this.GetChildOrNull<RigidBody3D>(i);
@@ -42,44 +71,56 @@ public partial class Glass : Node3D
 			this.AddChild(body3D);
 		}
 		
+		extrudeShape.Create3DShape(body3D, extrudeShape.Extrude2DShape(initalShape, 0.5f));
 
-		initalShape = new Shape(initalPoints, initalIndicies);
-		// Shape shape = extrudeShape.CreateShapeFromPoints(new List<Vector2>(initalPoints));
-		Shape3D shape3D = extrudeShape.Extrude2DShape(initalShape, 0.5f);
-		// extrudeShape.Create3DShape(body3D, shape3D.verticies, shape3D.indicies);
+		// Shape3D newShape = extrudeShape.Extrude2DShape(initalShape, .5f);
+		// extrudeShape.Create3DShape(body3D, newShape);
+
+		// Shape[] newShape = extrudeShape.CutShape(initalShape, new Vector2(2.52f,3.6f), new Vector2(2.5f,2.5f));
+		// extrudeShape.Create3DShape(body3D, extrudeShape.Extrude2DShape(newShape[1], 0.5f));
 	}
+
+	// List<Shape> shapes = new List<Shape>();
+	// void Break()
+	// {
+	// 	if(shapes.Count == 0) shapes.Add(initalShape);
+	// 	// float x = random.RandfRange(0,5);
+	// 	// float y = random.RandfRange(0,5);
+	// 	// shapes = extrudeShape.CutShapes(shapes, new Vector2(x, y), new Vector2(2.5f, 2.5f));
+	// 	shapes = extrudeShape.CutShapes(shapes, new Vector2(2.8240297f, 0.16908048f), new Vector2(2.5f, 2.5f));
+	// 	// shapes = extrudeShape.CutShapes(shapes, new Vector2(2.1575003f, 1.3231566f), new Vector2(2.5f, 2.5f));
+	// 	// shapes = extrudeShape.CutShapes(shapes, new Vector2(1.7900112f, 2.7643127f), new Vector2(2.5f, 2.5f));
+	// 	RemoveChildren();
+
+	// 	for(int i = 0; i < shapes.Count; i++)
+	// 	{
+	// 		RigidBody3D rb3d = new RigidBody3D();
+	// 		this.AddChild(rb3d);
+	// 		extrudeShape.Create3DShape(rb3d, extrudeShape.Extrude2DShape(shapes[i], 0.5f));
+	// 		// for(int w = 0; w < shapes[i].points.Count; w++) GD.Print(shapes[i].points[w]);
+	// 		// break;
+	// 	}
+	// 	// GD.Print(x + " " + y);
+	// }
+
 
 	void Break()
 	{
-		GD.Print("break");
-		Vector3 bodyPos = body3D.Position;
+		
 		RemoveChildren();
-		Node3D node = new Node3D();
-		this.AddChild(node);
-		node.Position = bodyPos;
+		float x = random.RandfRange(0,5);
+		float y = random.RandfRange(0,5);
+		shapeList = extrudeShape.CutShapes(shapeList, new Vector2(x, y), new Vector2(2.5f, 2.5f));
 
-		List<Shape> shapes = new List<Shape>();
-		Shape[] cutShapes = extrudeShape.CutShape(initalShape, new Vector2(0,0), new Vector2(1, 5));
-		shapes.Add(cutShapes[0]);
-		shapes.Add(cutShapes[1]);
-
-		List<Shape> tempShapes = new List<Shape>();
-		for(int i = 0; i < shapes.Count; i++)
+		for(int i = 0; i < shapeList.Count; i++)
 		{
-			Shape[] tempCutShapes = extrudeShape.CutShape(shapes[i], new Vector2(1,4), new Vector2(5,1));
-			tempShapes.Add(tempCutShapes[0]);
-			tempShapes.Add(tempCutShapes[1]);
-		}
-
-		for(int i = 3; i < tempShapes.Count; i++)
-		{
-			RigidBody3D body = new RigidBody3D();
-			node.AddChild(body);
-			extrudeShape.Create3DShape(body, extrudeShape.Extrude2DShape(tempShapes[i], 0.5f));
-			for(int w = 0; w < tempShapes[i].points.Count; w++) GD.Print(tempShapes[i].points[w]);
-			break;
+			RigidBody3D rb = new RigidBody3D();
+			this.AddChild(rb);
+			extrudeShape.Create3DShape(rb, extrudeShape.Extrude2DShape(shapeList[i], 0.5f));
 		}
 	}
+
+
 
 	void RemoveChildren()
 	{
@@ -91,14 +132,16 @@ public partial class Glass : Node3D
 	}
 
 	bool timerRunning = true;
-	double timeDelay = 0f;
+	double timeDelay = 1f;
+	// double timeDelay = 0f;
 	public override void _Process(double delta)
 	{
 		if(timerRunning && timeDelay > 0) timeDelay -= delta;
 		if(timerRunning && timeDelay <= 0)
 		{
-			timerRunning = false;
-			Break();
+			timeDelay = 1;
+			// timerRunning = false;
+			if(canBreak) Break();
 		}
 	}
 }

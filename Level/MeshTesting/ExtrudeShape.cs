@@ -5,57 +5,10 @@ using System.Linq;
 using System.Reflection.Metadata.Ecma335;
 using System.Transactions;
 
-[Tool]
+// [Tool]
 public partial class ExtrudeShape : Node3D
 {
 	[Export] RigidBody3D physBody;
-	// inital shape
-	// public Vector2[] pointsInShape = 
-	// {
-	// 	new Vector2(0.5f, 2),
-	// 	new Vector2(2,2),
-	// 	new Vector2(1,1)
-	// };
-	// public int[] indiciesInShape =
-	// {
-	// 	2,0,1
-	// };
-	// public Vector2[] pointsInShape = 
-	// {
-	// 	new Vector2(0.5f, 2),
-	// 	new Vector2(2,2),
-	// 	new Vector2(1,1),
-	// 	new Vector2(2,0),
-	// 	new Vector2(1.5f, 0)
-	// };
-	// public int[] indiciesInShape =
-	// {
-	// 	2,0,1,
-	// 	4,2,3,
-	// 	3,2,1
-	// };
-	// public Vector2[] pointsInShape = 
-	// {
-	// 	new Vector2(0,0),
-	// 	new Vector2(2,0),
-	// 	new Vector2(2,2),
-	// 	new Vector2(0,2)
-	// };
-	// public int[] indiciesInShape =
-	// {
-	// 	0,3,2,
-	// 	0,2,1
-	// };
-	public Vector2[] pointsInShape = 
-	{
-		new Vector2(0,0),
-		new Vector2(2,2),
-		new Vector2(0,2)
-	};
-	public int[] indiciesInShape =
-	{
-		0,2,1
-	};
 
 	public void Create3DShape(RigidBody3D body, Shape3D shape)
 	{
@@ -218,51 +171,6 @@ public partial class ExtrudeShape : Node3D
 		return vertex;
 	}
 
-	public override void _Ready()
-	{
-	// 	RemoveChildren();
-	// 	// Extrude2DShape(pointsInShape, indiciesInShape, .5f);
-
-	// Shape3D shape3D = Extrude2DShape(pointsInShape, indiciesInShape, 0.5f);
-	// Create3DShape(physBody, shape3D);
-
-	// 	// int[] ind = {indiciesInShape[0], indiciesInShape[1], indiciesInShape[2]};
-	// 	// Shape[] shapes = CutTriangle(pointsInShape, ind, new Vector2(0,2), new Vector2(1,2));
-	// 	// Extrude2DShape(shapes[1], 0.5f);
-
-	// 	// Shape newShape = CreateShapeFromPoints(new List<Vector2>(pointsInShape));
-	// 	// Extrude2DShape(newShape.points, newShape.indicies, .25f);
-
-	// 	Shape[] shapes = CutShape(pointsInShape, indiciesInShape, new Vector2(1, 1), new Vector2(0,3));
-	// 	if(shapes[0].indicies.Count >= 3) Extrude2DShape(shapes[0], 0.5f);
-	// 	if(shapes[1].indicies.Count >= 3) Extrude2DShape(shapes[1], 0.5f);
-	// 	for(int i = 0; i < shapes[0].points.Count; i++) GD.Print(shapes[0].points[i]);
-	// 	for(int i = 0; i < shapes[0].indicies.Count; i++) GD.Print(shapes[0].indicies[i]);
-
-
-	// 	Shape[] shapes2 = CutShape(shapes[0].points, shapes[0].indicies, new Vector2(0, .5f), new Vector2(2,2));
-	// 	if(shapes2[0].indicies.Count >= 3) Extrude2DShape(shapes2[0], 0.5f);
-	// 	if(shapes2[1].indicies.Count >= 3) Extrude2DShape(shapes2[1], 0.5f);
-
-	// 	Shape[] shapes3 = CutShape(shapes2[1].points, shapes2[1].indicies, new Vector2(1, 1), new Vector2(2,1.25f));
-	// 	if(shapes3[0].indicies.Count >= 3) Extrude2DShape(shapes3[0], 0.5f);
-	// 	if(shapes3[1].indicies.Count >= 3) Extrude2DShape(shapes3[1], 0.5f);
-
-	// 	// GD.Print("shape 1");
-	// 	// for(int i = 0; i < shapes[0].points.Count; i++) GD.Print(shapes[0].points[i]);
-	// 	// for(int i = 0; i < shapes[0].indicies.Count; i++) GD.Print(shapes[0].indicies[i]);
-	// 	// GD.Print("shape 2");
-	// 	// for(int i = 0; i < shapes[1].points.Count; i++) GD.Print(shapes[1].points[i]);
-	// 	// for(int i = 0; i < shapes[1].indicies.Count; i++) GD.Print(shapes[1].indicies[i]);
-
-	// 	// Shape[] shapes2 = CutShape(pointsInShape, indiciesInShape, new Vector2(0, .5f), new Vector2(2,2));
-	// 	// if(shapes2[0].indicies.Count >= 3) Extrude2DShape(shapes2[0], 0.5f);
-
-	// 	// int[] ind = {indiciesInShape[0], indiciesInShape[1], indiciesInShape[2]};
-	// 	// Shape[] shapes = CutTriangle(pointsInShape, ind, new Vector2(0, .5f), new Vector2(2,2));
-	// 	// Extrude2DShape(shapes[1], 0.5f);
-	}
-
 	void RemoveChildren()
 	{
 		var children = this.GetChildren();
@@ -270,6 +178,20 @@ public partial class ExtrudeShape : Node3D
 		{
 			children[i].QueueFree();
 		}
+	}
+
+	public List<Shape> CutShapes(List<Shape> shapes, Vector2 pt1, Vector2 pt2)
+	{
+		List<Shape> newShapeList = new List<Shape>();
+
+		for(int i = 0; i < shapes.Count; i++)
+		{
+			Shape[] tempShapes = CutShape(shapes[i], pt1, pt2);
+			if(tempShapes[0].points.Count > 0) newShapeList.Add(tempShapes[0]);
+			if(tempShapes[1].points.Count > 0) newShapeList.Add(tempShapes[1]);
+		}
+
+		return newShapeList;
 	}
 
 	public Shape[] CutShape(Shape shape, Vector2 pt1, Vector2 pt2)
@@ -448,10 +370,17 @@ public partial class ExtrudeShape : Node3D
 			GD.Print("");
 			for(int i = 0; i < pointsInShape2.Count; i++) GD.Print(pointsInShape2[i]);
 		}
-		if(pointsInShape1.Count > 0) triangles1 = CreateShapeFromPoints(pointsInShape1);
-		if(pointsInShape2.Count > 0) triangles2 = CreateShapeFromPoints(pointsInShape2);
+		// if(pointsInShape1.Count > 0 && pointsInShape1.Count != 3 && pointsInShape1.Count != 4)
+		// {
+		// 	GD.Print("bad");
+		// }
 		
+		pointsInShape1 = ConsolidateSimilarPoints(pointsInShape1);
+		pointsInShape2 = ConsolidateSimilarPoints(pointsInShape2);
 
+		if(pointsInShape1.Count == 3 || pointsInShape1.Count == 4) triangles1 = CreateShapeFromPoints(pointsInShape1);
+		if(pointsInShape2.Count == 3 || pointsInShape2.Count == 4) triangles2 = CreateShapeFromPoints(pointsInShape2);
+		
 		returnShapes[0] = triangles1;
 		returnShapes[1] = triangles2;
 		return returnShapes;
@@ -472,7 +401,26 @@ public partial class ExtrudeShape : Node3D
 		*/
 	}
 
-	int GetShapePointIsIn(Vector2 pt1, Vector2 pt2, Vector2 testPoint)
+	List<Vector2> ConsolidateSimilarPoints(List<Vector2> points)
+	{
+		List<Vector2> consolidatedPoints = new List<Vector2>();
+		for(int i = 0; i < points.Count; i++)
+		{
+			bool unique = true;
+			for(int w = 0; w < consolidatedPoints.Count; w++)
+			{
+				if(Mathf.Abs(consolidatedPoints[w].X - points[i].X) < 0.0001f && Mathf.Abs(consolidatedPoints[w].Y - points[i].Y) < 0.0001f)
+				{
+					unique = false;
+					break;
+				}
+			}
+			if(unique) consolidatedPoints.Add(points[i]);
+		}
+		return consolidatedPoints;
+	}
+
+	int GetSideOfLinePointIsOn(Vector2 pt1, Vector2 pt2, Vector2 testPoint)
 	{
 		float slope = (pt1.Y-pt2.Y)/(pt1.X-pt2.X);
 		return GetShapePointIsIn(slope, pt1, testPoint);
@@ -536,30 +484,22 @@ public partial class ExtrudeShape : Node3D
 		
 		if(points.Count == 4)
 		{
-			int farthestPoint = -1;
-			double farthestDist = 0;
-			for(int i = 0; i < points.Count; i++)
-			{
-				if(i == pointOrder[3]) continue;
-				double dist = Math.Sqrt( Mathf.Pow((points[pointOrder[3]].X - points[i].X),2) + Mathf.Pow((points[pointOrder[3]].Y - points[i].Y),2) );
-				if( dist > farthestDist)
-				{
-					farthestPoint = i;
-					farthestDist = dist;
-				}
-			}
+			for(int index = 0; index < 3; index++)
+			{	//check all lines in first tri angle, which are points at indexes 0,1,2, and see what side the unused point is at, and 
+				const int lastPointIndex = 3;
+				int index2 = index != 2 ? index+1 : 0;
+				int index3 = ((2+1 - index) - index2);
 
-			if( GetShapePointIsIn(points[pointOrder[0]], points[pointOrder[1]], points[pointOrder[2]]) == GetShapePointIsIn(points[pointOrder[0]], points[pointOrder[1]], points[pointOrder[3]]))
-			{
-				newShape.indicies.Add(pointOrder[2]);
-				newShape.indicies.Add(pointOrder[1]);
-				newShape.indicies.Add(pointOrder[3]);
-			}
-			else
-			{
-				newShape.indicies.Add(pointOrder[0]);
-				newShape.indicies.Add(pointOrder[3]);
-				newShape.indicies.Add(pointOrder[1]);
+				int sideNumInd3 = GetSideOfLinePointIsOn(points[pointOrder[index]], points[pointOrder[index2]], points[pointOrder[index3]]);
+				int sideNumInd4 = GetSideOfLinePointIsOn(points[pointOrder[index]], points[pointOrder[index2]], points[pointOrder[lastPointIndex]]);
+
+				if(sideNumInd3 != sideNumInd4 && sideNumInd3 != 0 && sideNumInd4 != 0)
+				{
+					newShape.indicies.Add(pointOrder[index]);
+					newShape.indicies.Add(pointOrder[lastPointIndex]);
+					newShape.indicies.Add(pointOrder[index2]);
+					break;
+				}
 			}
 		}
 		return newShape;
@@ -575,82 +515,53 @@ public partial class ExtrudeShape : Node3D
 			return pointOrder;
 		}
 
-		int firstPoint = -1; //lowest -if tie lowest leftmost
-		float lowest = points[0].Y;
-		for(int i = 1; i < points.Count; i++)
-		{
-			if(points[i].Y < lowest) lowest = points[i].Y;
-		}
-		//check for ties
-		int lowCnt = 0;
+		//find first point
+		int firstIndex = -1;
+		float leftMost = points[0].X;
 		for(int i = 0; i < points.Count; i++)
 		{
-			if(points[i].Y == lowest)
+			if(points[i].X < leftMost)
 			{
-				lowCnt++;
-				firstPoint = i;
+				leftMost = points[i].X;
+				firstIndex = i;
 			}
 		}
-		if(lowCnt > 1) //if tie
-		{
-			float leftMostLowest = points[firstPoint].X;
-			for(int i = 0; i < points.Count; i++)
-			{
-				if(points[i].Y == lowest && points[i].X < leftMostLowest) //if this is never true, the the leftMostLowest is already firstPoint, which is what we want
-				{
-					firstPoint = i;
-					break; //there will only ever be a tie between two points, or the points are in a line and do not for a triangle
-				}
-			}
-		}
-
-		int secondPoint = -1; //leftmost -if tie leftmost highest
-		float leftMost = points[firstPoint == 0 ? 1 : 0].X; //this need to not be the inital point, bc this will become the next point
-		for(int i = 1; i < points.Count; i++)
-		{
-			if(points[i].X < leftMost && i != firstPoint) leftMost = points[i].X;
-		}
-		//check for ties
-		int leftCnt = 0;
+		bool tie = false;
 		for(int i = 0; i < points.Count; i++)
 		{
-			if(points[i].X == leftMost && i != firstPoint)
+			if(i == firstIndex) continue;
+			if(points[i].X == leftMost)
 			{
-				leftCnt++;
-				secondPoint = i;
+				tie = true;
+				break;
 			}
 		}
-		if(leftCnt > 1) //if tie
+		if(tie)
 		{
-			float highestLeftMost = points[secondPoint].Y;
-			for(int i = 0; i < points.Count; i++)
-			{
-				if(points[i].X == leftMost && points[i].Y > highestLeftMost && i != firstPoint)
-				{
-					secondPoint = i;
-					break;
-				}
-			}
+			float lowest = float.PositiveInfinity;
+			for(int i = 0; i < points.Count; i++) if(points[i].X == leftMost && points[i].Y < lowest) firstIndex = i;
 		}
 
-		pointOrder[0] = firstPoint;
-		pointOrder[1] = secondPoint;
-		if(points.Count == 4)
+		//fillout point order with first point
+		pointOrder[0] = firstIndex;
+		int lastIndex = 0;
+		for(int i = 1; i < 4; i++)
 		{
-			int rightMostIndex = -1;
-			float rightVal = float.NegativeInfinity;
-			for(int i = 0; i < points.Count; i++)
-			{
-				if(i != firstPoint && i != secondPoint && points[i].X > rightVal)
-				{
-					rightVal = points[i].X;
-					rightMostIndex = i;
-				}
-			}
-			pointOrder[2] = rightMostIndex;
-			for(int i = 0; i < points.Count; i++) if(i != firstPoint && i != secondPoint && i != pointOrder[2]) pointOrder[3] = i;
+			if(lastIndex == firstIndex) lastIndex ++;
+			pointOrder[i] = lastIndex;
+			lastIndex++;
 		}
-		else for(int i = 0; i < points.Count; i++) if(i != firstPoint && i != secondPoint) pointOrder[2] = i;
+
+		int sideNum = GetSideOfLinePointIsOn(points[pointOrder[0]], points[pointOrder[2]], points[pointOrder[1]]);
+		
+		if(sideNum == -1)
+		{
+			int temp = pointOrder[1];
+			pointOrder[1] = pointOrder[2];
+			pointOrder[2] = temp;
+		}
+
+		// for(int i = 0; i < points.Count; i++) if(i != pointOrder[0] && i != pointOrder[1] && i != pointOrder[2]) pointOrder[3] = i;
 		return pointOrder;
 	}
 

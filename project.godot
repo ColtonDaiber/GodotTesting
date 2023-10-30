@@ -11,7 +11,7 @@ config_version=5
 [application]
 
 config/name="Test $-dev 5"
-run/main_scene="res://Level/Testing/testing scene.tscn"
+run/main_scene="res://Level/MeshTesting/MeshGenTesting.tscn"
 config/features=PackedStringArray("4.2", "C#", "GL Compatibility")
 run/max_fps=90
 config/icon="res://icon.svg"
