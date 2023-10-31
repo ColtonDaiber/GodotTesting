@@ -280,14 +280,14 @@ public partial class MeshGen : Node3D
 			float x = 0;
 			float y = 0;
 
-			int shapeNum = GetShapePointIsIn(lineCutSlope, pt1, verticies[indicies[i]]);
+			int shapeNum = GetSideOfLinePointIsOn(lineCutSlope, pt1, verticies[indicies[i]]);
 			if(shapeNum == 1) pointsInShape1.Add(verticies[indicies[i]]);
 			else if(shapeNum == -1) pointsInShape2.Add(verticies[indicies[i]]);
 			else if(shapeNum == 0)
 			{
 				int index3 = ((2+1 - i) - index2);
-				int index2ShapeNum = GetShapePointIsIn(lineCutSlope, pt1, verticies[indicies[index2]]);
-				int index3ShapeNum = GetShapePointIsIn(lineCutSlope, pt1, verticies[indicies[index3]]);
+				int index2ShapeNum = GetSideOfLinePointIsOn(lineCutSlope, pt1, verticies[indicies[index2]]);
+				int index3ShapeNum = GetSideOfLinePointIsOn(lineCutSlope, pt1, verticies[indicies[index3]]);
 				bool cutDoesNotIntersectTri = false;
 				if(index2ShapeNum != 0 && index2ShapeNum == index3ShapeNum) cutDoesNotIntersectTri = true;
 				else if(index2ShapeNum != index3ShapeNum && (index2ShapeNum == 0 || index3ShapeNum == 0)) cutDoesNotIntersectTri = true;
@@ -295,7 +295,8 @@ public partial class MeshGen : Node3D
 				{
 					// if(index2ShapeNum == 1) pointsInShape1.Add(verticies[indicies[i]]);
 					// else if(index2ShapeNum == -1) pointsInShape2.Add(verticies[indicies[i]]);
-
+					pointsInShape1.Add(verticies[indicies[i]]);
+					pointsInShape2.Add(verticies[indicies[i]]);
 					continue;
 				}
 				else GD.PushError("Should not be here!!!");
@@ -423,22 +424,22 @@ public partial class MeshGen : Node3D
 	int GetSideOfLinePointIsOn(Vector2 pt1, Vector2 pt2, Vector2 testPoint)
 	{
 		float slope = (pt1.Y-pt2.Y)/(pt1.X-pt2.X);
-		return GetShapePointIsIn(slope, pt1, testPoint);
+		return GetSideOfLinePointIsOn(slope, pt1, testPoint);
 	}
-	int GetShapePointIsIn(float slope, Vector2 linePt, Vector2 vertex)
+	int GetSideOfLinePointIsOn(float slope, Vector2 linePt, Vector2 vertex)
 	{
 		if(!float.IsInfinity(slope))
 		{
 			//reconstruct y=mx+b from slope and point -> y=mx - m(x0) + y(0) 	then plug in vertex x, and see if vertex y is greater
-			if(vertex.Y > (slope*vertex.X) - (slope*linePt.X) + linePt.Y) return 1;
-			else if(vertex.Y < (slope*vertex.X) - (slope*linePt.X) + linePt.Y) return -1;
-			else return 0;
+			if(vertex.Y - ((slope*vertex.X) - (slope*linePt.X) + linePt.Y) > 0.001 ) return 1; //effectivly if(vertex.Y > ((slope*vertex.X) - (slope*linePt.X) + linePt.Y))
+			else if(((slope*vertex.X) - (slope*linePt.X) + linePt.Y) - vertex.Y > 0.001) return -1; //effectivly if(vertex.Y < ((slope*vertex.X) - (slope*linePt.X) + linePt.Y))
+			else return 0; //if they are about equal
 		}
 		else //line is vertical, ex) x = 0
 		{
-			if(vertex.X > linePt.X) return 1;
-			else if(vertex.X < linePt.X) return -1;
-			else return 0;
+			if(vertex.X - linePt.X > 0.001) return 1; //effectivly if(vertex.X > linePt.X)
+			else if(linePt.X - vertex.X > 0.001 ) return -1; //effectivly if(vertex.X < linePt.X)
+			else return 0; //if they are about equal
 		}
 	}
 

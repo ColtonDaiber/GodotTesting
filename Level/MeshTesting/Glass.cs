@@ -17,6 +17,10 @@ public partial class Glass : Node3D
 	// };
 	public Vector2[] initalPoints = 
 	{
+		// new Vector2(0,0),
+		// new Vector2(0,2.5f),
+		// new Vector2(2.5f,2.5f),
+
 		new Vector2(0,0),
 		new Vector2(5,0),
 		new Vector2(5,5),
@@ -24,8 +28,10 @@ public partial class Glass : Node3D
 	};
 	public int[] initalIndicies =
 	{
+		// 0, 1, 2
+
 		0,3,2,
-		0,2,1
+		0,2,1,
 	};
 	// public Vector2[] initalPoints = 
 	// {
@@ -37,17 +43,12 @@ public partial class Glass : Node3D
 
 	// tris
 	// public Vector2[] initalPoints = 
-	// // {
-	// // 	new Vector2(0, 0),
-	// // 	new Vector2(1, 0),
-	// // 	new Vector2(2, 2),
-	// // };
 	// {
-	// 	new Vector2(0, 0),
+	// 	new Vector2(0, .75f),
 	// 	new Vector2(2.5f, 2.5f),
-	// 	new Vector2(4.4f, 5),
+	// 	new Vector2(0, 2.1f),
 	// };
-	const bool canBreak = true;
+	const bool canBreak = false;
 	Shape initalShape;
 	MeshGen meshGen = new MeshGen();
 
@@ -55,10 +56,12 @@ public partial class Glass : Node3D
 	private RandomNumberGenerator random = new RandomNumberGenerator();
 	public override void _Ready()
 	{
-		// random.Randomize(); //sets seed
-		random.Seed = 1;
+		random.Randomize(); //sets seed
+		GD.Print(random.Seed);
+		// random.Seed = 1;
+		// random.Seed = 7950268038645855679;
 		initalShape = new Shape(initalPoints, initalIndicies);
-		// initalShape = extrudeShape.CreateShapeFromPoints(new List<Vector2>(initalPoints));
+		// initalShape = meshGen.CreateShapeFromPoints(new List<Vector2>(initalPoints));
 		shapeList = new List<Shape>{initalShape};
 		for(int i = 0; i < this.GetChildCount(); i++)
 		{
@@ -73,11 +76,13 @@ public partial class Glass : Node3D
 		
 		meshGen.Create3DShape(body3D, meshGen.Extrude2DShape(initalShape, 0.5f));
 
-		// Shape3D newShape = extrudeShape.Extrude2DShape(initalShape, .5f);
-		// extrudeShape.Create3DShape(body3D, newShape);
 
-		// Shape[] newShape = extrudeShape.CutShape(initalShape, new Vector2(2.52f,3.6f), new Vector2(2.5f,2.5f));
-		// extrudeShape.Create3DShape(body3D, extrudeShape.Extrude2DShape(newShape[1], 0.5f));
+		for(int i = 0; i < 10; i++)
+		{
+			Break();
+		}
+		// Shape3D newShape = meshGen.Extrude2DShape(initalShape, .5f);
+		// meshGen.Create3DShape(body3D, newShape);
 	}
 
 	// List<Shape> shapes = new List<Shape>();
@@ -103,13 +108,14 @@ public partial class Glass : Node3D
 	// 	// GD.Print(x + " " + y);
 	// }
 
-
+	public int breakCnt = 0;
 	void Break()
 	{
-		
+		GD.Print(++breakCnt);
 		RemoveChildren();
 		float x = random.RandfRange(0,5);
 		float y = random.RandfRange(0,5);
+		GD.Print(x + " " + y);
 		shapeList = meshGen.CutShapes(shapeList, new Vector2(x, y), new Vector2(2.5f, 2.5f));
 
 		for(int i = 0; i < shapeList.Count; i++)
@@ -132,15 +138,16 @@ public partial class Glass : Node3D
 	}
 
 	bool timerRunning = true;
-	double timeDelay = 1f;
-	// double timeDelay = 0f;
+	const double startTimeDelay = 0f;
+	double timeDelay = startTimeDelay;
 	public override void _Process(double delta)
 	{
 		if(timerRunning && timeDelay > 0) timeDelay -= delta;
 		if(timerRunning && timeDelay <= 0)
 		{
-			timeDelay = 1;
+			timeDelay = startTimeDelay;
 			// timerRunning = false;
+			if(breakCnt > 10) timerRunning = false;
 			if(canBreak) Break();
 		}
 	}
