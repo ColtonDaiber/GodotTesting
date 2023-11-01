@@ -1,37 +1,7 @@
-[gd_scene load_steps=13 format=3 uid="uid://b5otcuig7y52b"]
+[gd_scene load_steps=7 format=3 uid="uid://b5otcuig7y52b"]
 
-[ext_resource type="Script" path="res://Level/MeshTesting/MeshGeneration.cs" id="1_y38ej"]
-[ext_resource type="Script" path="res://Level/MeshTesting/TriangleGen.cs" id="2_4n0aw"]
 [ext_resource type="Script" path="res://Level/MeshTesting/Glass.cs" id="3_wr2rq"]
 [ext_resource type="Material" uid="uid://p5qpbep5s54h" path="res://Level/MeshTesting/Glass.tres" id="4_gw6h7"]
-
-[sub_resource type="ConvexPolygonShape3D" id="ConvexPolygonShape3D_ibojq"]
-points = PackedVector3Array(1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 0, 1, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
-
-[sub_resource type="ArrayMesh" id="ArrayMesh_071tn"]
-_surfaces = [{
-"aabb": AABB(0, 0, 0, 1, 1, 1),
-"format": 4097,
-"index_count": 36,
-"index_data": PackedByteArray(0, 0, 2, 0, 1, 0, 0, 0, 3, 0, 2, 0, 0, 0, 1, 0, 5, 0, 0, 0, 5, 0, 4, 0, 0, 0, 4, 0, 7, 0, 0, 0, 7, 0, 3, 0, 2, 0, 5, 0, 1, 0, 2, 0, 6, 0, 5, 0, 2, 0, 3, 0, 7, 0, 2, 0, 7, 0, 6, 0, 4, 0, 5, 0, 6, 0, 4, 0, 6, 0, 7, 0),
-"primitive": 3,
-"vertex_count": 8,
-"vertex_data": PackedByteArray(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 128, 63, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 128, 63, 0, 0, 0, 0, 0, 0, 128, 63, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 128, 63, 0, 0, 0, 0, 0, 0, 128, 63, 0, 0, 0, 0, 0, 0, 128, 63, 0, 0, 128, 63, 0, 0, 0, 0, 0, 0, 128, 63, 0, 0, 128, 63, 0, 0, 128, 63, 0, 0, 0, 0, 0, 0, 128, 63, 0, 0, 128, 63)
-}]
-
-[sub_resource type="ArrayMesh" id="ArrayMesh_oqkh1"]
-_surfaces = [{
-"aabb": AABB(0, 0, 0, 1, 1, 2),
-"format": 4097,
-"index_count": 24,
-"index_data": PackedByteArray(0, 0, 2, 0, 1, 0, 0, 0, 1, 0, 4, 0, 0, 0, 4, 0, 3, 0, 0, 0, 5, 0, 2, 0, 0, 0, 3, 0, 5, 0, 1, 0, 2, 0, 5, 0, 1, 0, 5, 0, 4, 0, 3, 0, 4, 0, 5, 0),
-"primitive": 3,
-"vertex_count": 6,
-"vertex_data": PackedByteArray(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 128, 63, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 63, 0, 0, 0, 0, 0, 0, 0, 64, 0, 0, 0, 0, 0, 0, 128, 63, 0, 0, 0, 0, 0, 0, 128, 63, 0, 0, 128, 63, 0, 0, 0, 0, 0, 0, 0, 63, 0, 0, 128, 63, 0, 0, 0, 64)
-}]
-
-[sub_resource type="ConvexPolygonShape3D" id="ConvexPolygonShape3D_h1346"]
-points = PackedVector3Array(1, 1, 0, 0.5, 1, 2, 1, 0, 0, 0, 1, 0, 0.5, 0, 2, 0, 0, 0)
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_ywqf5"]
 size = Vector3(20, 0.1, 20)
@@ -52,28 +22,6 @@ transform = Transform3D(1, 0, 0, 0, 0.876811, 0.480836, 0, -0.480836, 0.876811, 
 transform = Transform3D(1, 0, 0, 0, -0.334712, 0.942321, 0, -0.942321, -0.334712, 0, 0, -2.77082)
 shadow_enabled = true
 
-[node name="StaticBody3D" type="StaticBody3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1.78618)
-script = ExtResource("1_y38ej")
-
-[node name="CollisionShape3D" type="CollisionShape3D" parent="StaticBody3D"]
-shape = SubResource("ConvexPolygonShape3D_ibojq")
-
-[node name="MeshInstance3D" type="MeshInstance3D" parent="StaticBody3D"]
-mesh = SubResource("ArrayMesh_071tn")
-
-[node name="Triangle" type="StaticBody3D" parent="." node_paths=PackedStringArray("meshInstance", "collisionShape")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -1.42045)
-script = ExtResource("2_4n0aw")
-meshInstance = NodePath("MeshInstance3D")
-collisionShape = NodePath("CollisionShape3D")
-
-[node name="MeshInstance3D" type="MeshInstance3D" parent="Triangle"]
-mesh = SubResource("ArrayMesh_oqkh1")
-
-[node name="CollisionShape3D" type="CollisionShape3D" parent="Triangle"]
-shape = SubResource("ConvexPolygonShape3D_h1346")
-
 [node name="Glass" type="Node3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.30458, 1.48364, 0)
 script = ExtResource("3_wr2rq")
@@ -92,6 +40,7 @@ skeleton = NodePath("")
 
 [node name="Box" type="Node3D" parent="."]
 transform = Transform3D(4, 0, 0, 0, 4, 0, 0, 0, 0.25, 3.59052, 0.99944, -4.52041)
+visible = false
 
 [node name="RigidBody3D" type="RigidBody3D" parent="Box"]
 

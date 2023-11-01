@@ -182,15 +182,22 @@ public partial class MeshGen : Node3D
 		}
 	}
 
-	public List<Shape> CutShapes(List<Shape> shapes, Vector2 pt1, Vector2 pt2)
+	public List<ShapeObject> CutShapes(List<ShapeObject> shapeList, Vector2 pt1, Vector2 pt2)
 	{
-		List<Shape> newShapeList = new List<Shape>();
+		List<ShapeObject> newShapeList = new List<ShapeObject>();
 
-		for(int i = 0; i < shapes.Count; i++)
+		for(int i = 0; i < shapeList.Count; i++)
 		{
-			Shape[] tempShapes = CutShape(shapes[i], pt1, pt2);
-			if(tempShapes[0].points.Count > 0) newShapeList.Add(tempShapes[0]);
-			if(tempShapes[1].points.Count > 0) newShapeList.Add(tempShapes[1]);
+			for(int ii = 0; ii < shapeList[i].shapes.Count; ii++)
+			{
+				Shape[] tempShapes = CutShape(shapeList[i].shapes[ii], pt1, pt2);
+				ShapeObject tempShapeObj = new ShapeObject(new List<Shape>(), new RigidBody3D());
+				tempShapeObj.rb.Position = shapeList[i].rb.Position;
+				tempShapeObj.rb.Rotation = shapeList[i].rb.Rotation;
+				if(tempShapes[0].points.Count > 0) tempShapeObj.shapes.Add(tempShapes[0]);
+				if(tempShapes[1].points.Count > 0) tempShapeObj.shapes.Add(tempShapes[1]);
+				newShapeList.Add(tempShapeObj);
+			}
 		}
 
 		return newShapeList;
@@ -255,6 +262,12 @@ public partial class MeshGen : Node3D
 	Shape[] CutTriangle(Vector2[] verticies, int[] indicies, Vector2 pt1, Vector2 pt2)
 	{
 		Shape[] returnShapes = {new Shape(), new Shape()};
+		if(pt1.X == pt2.X && pt1.Y == pt2.Y)
+		{
+			returnShapes[0].points = new List<Vector2>(verticies);
+			returnShapes[1].points.Clear();
+			return returnShapes;
+		}
 		if(indicies.Length != 3)
 		{
 			GD.PushError("expected 3 indicies!");
@@ -630,5 +643,17 @@ public class Shape3D
 
 public class ShapeObject
 {
-	public List<Shape3D>
+	public List<Shape> shapes;
+	public RigidBody3D rb;
+
+	public ShapeObject()
+	{
+		shapes = new List<Shape>();
+		rb = new RigidBody3D();
+	}
+	public ShapeObject(List<Shape> newShape, RigidBody3D newRb)
+	{
+		shapes = newShape;
+		rb = newRb;
+	}
 };
