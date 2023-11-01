@@ -10,11 +10,11 @@ public partial class MeshGen : Node3D
 {
 	[Export] RigidBody3D physBody;
 
-	public void Create3DShape(RigidBody3D body, Shape3D shape)
+	public void Create3DShape(RigidBody3D body, Shape3D shape, Material mat = null)
 	{
-		Create3DShape(body, shape.verticies, shape.indicies);
+		Create3DShape(body, shape.verticies, shape.indicies, mat);
 	}
-	public void Create3DShape(RigidBody3D body, List<Vector3> vertexs, List<int> indicies)
+	public void Create3DShape(RigidBody3D body, List<Vector3> vertexs, List<int> indicies, Material mat = null)
 	{
 		Vector3[] vertArray = new Vector3[vertexs.Count];
 		for(int i = 0; i < vertexs.Count; i++) vertArray[i] = vertexs[i];
@@ -22,9 +22,9 @@ public partial class MeshGen : Node3D
 		int[] indArray = new int[indicies.Count];
 		for(int i = 0; i < indicies.Count; i++) indArray[i] = indicies[i];
 
-		Create3DShape(body, vertArray, indArray);
+		Create3DShape(body, vertArray, indArray, mat);
 	}
-	public void Create3DShape(RigidBody3D body, Vector3[] vertexs, int[] indicies)
+	public void Create3DShape(RigidBody3D body, Vector3[] vertexs, int[] indicies, Material mat = null)
 	{
 		MeshInstance3D meshInstance = null;
 		CollisionShape3D collisionShape = null;
@@ -32,6 +32,7 @@ public partial class MeshGen : Node3D
 		arrays.Resize((int)Mesh.ArrayType.Max);
 		arrays[(int)Mesh.ArrayType.Vertex] = vertexs;
 		arrays[(int)Mesh.ArrayType.Index] = indicies;
+		arrays[(int)Mesh.ArrayType.TexUV] = vertexs;
 
 		ArrayMesh mesh = new ArrayMesh();
 		mesh.AddSurfaceFromArrays(Mesh.PrimitiveType.Triangles, arrays);
@@ -58,6 +59,7 @@ public partial class MeshGen : Node3D
 		}
 		
 		meshInstance.Mesh = mesh;
+		if(mat != null) meshInstance.MaterialOverride = mat;
 		collisionShape.Shape = mesh.CreateConvexShape();
 
 		body.CenterOfMassMode = RigidBody3D.CenterOfMassModeEnum.Custom;
@@ -624,4 +626,9 @@ public class Shape3D
 		verticies = new List<Vector3>();
 		indicies = new List<int>();
 	}
+};
+
+public class ShapeObject
+{
+	public List<Shape3D>
 };

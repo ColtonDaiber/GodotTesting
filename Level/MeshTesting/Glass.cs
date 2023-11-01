@@ -7,7 +7,8 @@ using System.Threading;
 // [Tool]
 public partial class Glass : Node3D
 {
-	[Export] public RigidBody3D body3D;
+	[Export] ShaderMaterial GlassMat;
+	public RigidBody3D body3D;
 	// public Vector2[] initalPoints = 
 	// {
 	// 	new Vector2(-0f,4.75f),
@@ -81,8 +82,12 @@ public partial class Glass : Node3D
 		{
 			Break();
 		}
-		// Shape3D newShape = meshGen.Extrude2DShape(initalShape, .5f);
-		// meshGen.Create3DShape(body3D, newShape);
+		for(int i = 0; i < shapeList.Count; i++)
+		{
+			RigidBody3D rb = new RigidBody3D();
+			this.AddChild(rb);
+			meshGen.Create3DShape(rb, meshGen.Extrude2DShape(shapeList[i], 0.5f), GlassMat);
+		}
 	}
 
 	// List<Shape> shapes = new List<Shape>();
@@ -117,13 +122,6 @@ public partial class Glass : Node3D
 		float y = random.RandfRange(0,5);
 		GD.Print(x + " " + y);
 		shapeList = meshGen.CutShapes(shapeList, new Vector2(x, y), new Vector2(2.5f, 2.5f));
-
-		for(int i = 0; i < shapeList.Count; i++)
-		{
-			RigidBody3D rb = new RigidBody3D();
-			this.AddChild(rb);
-			meshGen.Create3DShape(rb, meshGen.Extrude2DShape(shapeList[i], 0.5f));
-		}
 	}
 
 

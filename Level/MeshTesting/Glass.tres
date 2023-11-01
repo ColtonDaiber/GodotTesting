@@ -1,0 +1,15 @@
+[gd_resource type="ShaderMaterial" load_steps=4 format=3 uid="uid://p5qpbep5s54h"]
+
+[ext_resource type="Shader" path="res://Level/MeshTesting/GlassShader.gdshader" id="1_fraco"]
+
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_1efsg"]
+
+[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_6cpay"]
+as_normal_map = true
+noise = SubResource("FastNoiseLite_1efsg")
+
+[resource]
+render_priority = 0
+shader = ExtResource("1_fraco")
+shader_parameter/distortion_size = 0.05
+shader_parameter/glass = SubResource("NoiseTexture2D_6cpay")
