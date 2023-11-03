@@ -134,7 +134,7 @@ public partial class Glass : Node3D
 			if(canBreak)
 			{
 				RemoveChildren();
-				for(int i = 0; i < 10; i++)
+				for(int i = 0; i < 15; i++)
 				{
 					Break();
 				}
@@ -146,7 +146,7 @@ public partial class Glass : Node3D
 						rb.Position = shapeList[i].rb.Position;
 						rb.Rotation = shapeList[i].rb.Rotation;
 						this.AddChild(rb);
-						meshGen.Create3DShape(rb, meshGen.Extrude2DShape(shapeList[i].shapes[ii], 0.5f), GlassMat);
+						meshGen.Create3DShape(rb, meshGen.Extrude2DShape(shapeList[i].shapes[ii], 0.5f), GlassMat, 0.1f);
 					}
 				}
 			}

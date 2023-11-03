@@ -10,11 +10,11 @@ public partial class MeshGen : Node3D
 {
 	[Export] RigidBody3D physBody;
 
-	public void Create3DShape(RigidBody3D body, Shape3D shape, Material mat = null)
+	public void Create3DShape(RigidBody3D body, Shape3D shape, Material mat = null, float individualMass = -1)
 	{
-		Create3DShape(body, shape.verticies, shape.indicies, mat);
+		Create3DShape(body, shape.verticies, shape.indicies, mat, individualMass);
 	}
-	public void Create3DShape(RigidBody3D body, List<Vector3> vertexs, List<int> indicies, Material mat = null)
+	public void Create3DShape(RigidBody3D body, List<Vector3> vertexs, List<int> indicies, Material mat = null, float individualMass = -1)
 	{
 		Vector3[] vertArray = new Vector3[vertexs.Count];
 		for(int i = 0; i < vertexs.Count; i++) vertArray[i] = vertexs[i];
@@ -22,9 +22,9 @@ public partial class MeshGen : Node3D
 		int[] indArray = new int[indicies.Count];
 		for(int i = 0; i < indicies.Count; i++) indArray[i] = indicies[i];
 
-		Create3DShape(body, vertArray, indArray, mat);
+		Create3DShape(body, vertArray, indArray, mat, individualMass);
 	}
-	public void Create3DShape(RigidBody3D body, Vector3[] vertexs, int[] indicies, Material mat = null)
+	public void Create3DShape(RigidBody3D body, Vector3[] vertexs, int[] indicies, Material mat = null, float individualMass = -1)
 	{
 		MeshInstance3D meshInstance = null;
 		CollisionShape3D collisionShape = null;
@@ -67,6 +67,7 @@ public partial class MeshGen : Node3D
 		for(int i = 0; i < vertexs.Length; i++) centerOfMass += vertexs[i];
 		centerOfMass = centerOfMass/vertexs.Length;
 		body.CenterOfMass = centerOfMass;
+		if(individualMass > 0) body.Mass = individualMass;
 	}
 
 	public Shape3D Extrude2DShape(Shape shape, float extrudeDist)
